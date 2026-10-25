@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class TokenOut(BaseModel):
@@ -19,6 +19,14 @@ class UserCreate(BaseModel):
     password: str = Field(min_length=12)
     role: Literal["ciso", "analyst", "auditor", "owner"] = "analyst"
     org_ids: list[str] = []
+
+    @field_validator("password")
+    @classmethod
+    def _bcrypt_limit(cls, v: str) -> str:
+        # bcrypt only uses the first 72 bytes; bcrypt>=5 raises instead of truncating
+        if len(v.encode()) > 72:
+            raise ValueError("password must be at most 72 bytes")
+        return v
 
 
 class OrgCreate(BaseModel):

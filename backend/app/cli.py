@@ -48,7 +48,7 @@ def main() -> None:
             print(org.id)
         elif args.cmd == "create-user":
             pw = os.getenv("NEXUS_BOOTSTRAP_PASSWORD") or getpass.getpass("Password (min 12 chars): ")
-            assert len(pw) >= 12, "password too short"
+            assert 12 <= len(pw) and len(pw.encode()) <= 72, "password must be 12 chars to 72 bytes"
             db.add(User(email=args.email.lower(), full_name=args.name, role=args.role, password_hash=hash_password(pw))); db.commit()
             print("ok")
         elif args.cmd == "seed-demo":
