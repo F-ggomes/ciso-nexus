@@ -1,0 +1,18 @@
+{
+  "id": "gdpr", "name": "Regulation (EU) 2016/679 - GDPR (and Lei n.º 58/2019, Portugal)",
+  "kind": "regulation", "jurisdiction": "EU", "issuer": "European Parliament and Council", "version": "2016/679", "effective_date": "2018-05-25",
+  "source_url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "Art. 5", "title": "Principles - lawfulness, purpose limitation, minimisation, accuracy, storage limitation, integrity, accountability", "kind": "article", "domain": "Principles"},
+    {"ref": "Art. 6", "title": "Lawfulness of processing", "kind": "article", "domain": "Principles"},
+    {"ref": "Art. 25", "title": "Data protection by design and by default", "kind": "article", "domain": "Controller"},
+    {"ref": "Art. 28", "title": "Processor - contractual requirements (Art. 28(3)), sub-processors, audits", "kind": "article", "domain": "Processors", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.20"}]},
+    {"ref": "Art. 30", "title": "Records of processing activities (RoPA)", "kind": "article", "domain": "Accountability"},
+    {"ref": "Art. 32", "title": "Security of processing", "kind": "article", "domain": "Security", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.34"}]},
+    {"ref": "Art. 33", "title": "Notification of a personal data breach to the supervisory authority (72h; CNPD in Portugal)", "kind": "article", "domain": "Breaches"},
+    {"ref": "Art. 34", "title": "Communication of a personal data breach to the data subject", "kind": "article", "domain": "Breaches"},
+    {"ref": "Art. 35", "title": "Data protection impact assessment (DPIA)", "kind": "article", "domain": "Accountability"},
+    {"ref": "Art. 37", "title": "Designation of the data protection officer", "kind": "article", "domain": "Accountability"},
+    {"ref": "Art. 44-49", "title": "Transfers of personal data to third countries (adequacy, SCCs 2021/914, derogations) - relevant for Angola", "kind": "article", "domain": "Transfers"}
+  ]
+}

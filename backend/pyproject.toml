@@ -1,0 +1,41 @@
+[project]
+name = "ciso-nexus"
+version = "0.1.0"
+description = "AI-driven GRC orchestration platform for the CISO: Claude + Gemini agents over GRC systems of record and security tooling"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+    "alembic>=1.13",
+    "httpx>=0.27",
+    "anthropic>=0.34",
+    "google-genai>=1.0",
+    "apscheduler>=3.10",
+    "python-jose[cryptography]>=3.3",
+    "bcrypt>=4.0,<5",
+    "structlog>=24.1",
+    "msal>=1.28",
+    "mcp>=1.2",
+    "cryptography>=42",
+    "openpyxl>=3.1",
+    "python-docx>=1.1",
+    "pypdf>=4.2",
+    "reportlab>=4.1",
+    "python-multipart>=0.0.9",
+    "email-validator>=2.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21", "ruff>=0.5", "mypy>=1.10"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

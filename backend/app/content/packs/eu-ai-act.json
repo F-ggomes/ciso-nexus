@@ -1,0 +1,21 @@
+{
+  "id": "eu-ai-act", "name": "Regulation (EU) 2024/1689 - Artificial Intelligence Act",
+  "kind": "regulation", "jurisdiction": "EU", "issuer": "European Parliament and Council", "version": "2024/1689", "effective_date": "2024-08-01",
+  "source_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "Art. 4", "title": "AI literacy of staff", "kind": "article", "domain": "General"},
+    {"ref": "Art. 5", "title": "Prohibited AI practices", "kind": "article", "domain": "General"},
+    {"ref": "Art. 6", "title": "Classification rules for high-risk AI systems (Annex I, Annex III incl. creditworthiness, insurance)", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 9", "title": "Risk management system for high-risk AI", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 10", "title": "Data and data governance", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 11", "title": "Technical documentation", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 12", "title": "Record-keeping (logging)", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 13", "title": "Transparency and provision of information to deployers", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 14", "title": "Human oversight", "kind": "article", "domain": "High-risk"},
+    {"ref": "Art. 15", "title": "Accuracy, robustness and cybersecurity", "kind": "article", "domain": "High-risk", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.25"}]},
+    {"ref": "Art. 26", "title": "Obligations of deployers of high-risk AI systems", "kind": "article", "domain": "Deployers"},
+    {"ref": "Art. 27", "title": "Fundamental rights impact assessment (FRIA)", "kind": "article", "domain": "Deployers"},
+    {"ref": "Art. 50", "title": "Transparency obligations for certain AI systems (chatbots, synthetic content)", "kind": "article", "domain": "Transparency"},
+    {"ref": "Art. 72-73", "title": "Post-market monitoring and reporting of serious incidents", "kind": "article", "domain": "Post-market"}
+  ]
+}

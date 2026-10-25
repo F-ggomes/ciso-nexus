@@ -1,0 +1,32 @@
+{
+  "id": "dora", "name": "Regulation (EU) 2022/2554 - Digital Operational Resilience Act (DORA)",
+  "kind": "regulation", "jurisdiction": "EU", "issuer": "European Parliament and Council", "version": "2022/2554", "effective_date": "2025-01-17",
+  "source_url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "Art. 5", "title": "Governance and organisation - management body responsibility for ICT risk", "kind": "article", "domain": "Governance"},
+    {"ref": "Art. 6", "title": "ICT risk management framework (documented, reviewed annually, digital resilience strategy)", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 7", "title": "ICT systems, protocols and tools - resilient, reliable, sufficient capacity", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 8", "title": "Identification - business functions, information assets, ICT assets, dependencies, risk assessment", "kind": "article", "domain": "ICT risk management", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.9"}]},
+    {"ref": "Art. 9", "title": "Protection and prevention - security policies, patching, network security, authentication, cryptography", "kind": "article", "domain": "ICT risk management", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.8"}]},
+    {"ref": "Art. 10", "title": "Detection - anomalous activities, multiple layers of control, alert thresholds", "kind": "article", "domain": "ICT risk management", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.16"}]},
+    {"ref": "Art. 11", "title": "Response and recovery - ICT business continuity policy, plans, testing, crisis communication", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 12", "title": "Backup policies and procedures, restoration and recovery", "kind": "article", "domain": "ICT risk management", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.13"}]},
+    {"ref": "Art. 13", "title": "Learning and evolving - post-incident reviews, awareness and training", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 14", "title": "Communication - crisis communication plans, disclosure of major incidents", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 15", "title": "RTS on ICT risk management framework (Delegated Regulation (EU) 2024/1774)", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 16", "title": "Simplified ICT risk management framework (small, non-interconnected entities)", "kind": "article", "domain": "ICT risk management"},
+    {"ref": "Art. 17", "title": "ICT-related incident management process", "kind": "article", "domain": "Incidents", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.24"}]},
+    {"ref": "Art. 18", "title": "Classification of ICT-related incidents and cyber threats (RTS 2024/1772)", "kind": "article", "domain": "Incidents"},
+    {"ref": "Art. 19", "title": "Reporting of major ICT-related incidents - initial, intermediate, final reports", "kind": "article", "domain": "Incidents"},
+    {"ref": "Art. 20", "title": "Harmonisation of reporting content and templates (ITS)", "kind": "article", "domain": "Incidents"},
+    {"ref": "Art. 24", "title": "Digital operational resilience testing programme", "kind": "article", "domain": "Testing"},
+    {"ref": "Art. 25", "title": "Testing of ICT tools and systems (vulnerability assessments, scenario tests, penetration testing)", "kind": "article", "domain": "Testing"},
+    {"ref": "Art. 26", "title": "Advanced testing by threat-led penetration testing (TLPT) every three years", "kind": "article", "domain": "Testing"},
+    {"ref": "Art. 27", "title": "Requirements for testers of TLPT", "kind": "article", "domain": "Testing"},
+    {"ref": "Art. 28", "title": "General principles for managing ICT third-party risk; strategy; Register of Information (ITS 2024/2956)", "kind": "article", "domain": "Third-party risk", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.19"}]},
+    {"ref": "Art. 29", "title": "Preliminary assessment of ICT concentration risk", "kind": "article", "domain": "Third-party risk"},
+    {"ref": "Art. 30", "title": "Key contractual provisions for ICT services (Art. 30(2) all; Art. 30(3) critical or important functions)", "kind": "article", "domain": "Third-party risk", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.20"}]},
+    {"ref": "Art. 31", "title": "Designation of critical ICT third-party service providers", "kind": "article", "domain": "Third-party risk"},
+    {"ref": "Art. 45", "title": "Information-sharing arrangements on cyber threat information", "kind": "article", "domain": "Information sharing"}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "lei-22-11-ao", "name": "Lei n.º 22/11 de 17 de Junho - Lei da Protecção de Dados Pessoais (Angola)",
+  "kind": "law", "jurisdiction": "AO", "issuer": "Assembleia Nacional de Angola; autoridade: APD", "version": "2011", "effective_date": "2011-06-17",
+  "source_url": "https://www.apd.ao/", "licensed_text": false, "pack_version": "1.0",
+  "notes": "Artigos a confirmar no texto oficial; a APD (Agência de Protecção de Dados) é a autoridade de controlo. Verificar também a Lei n.º 7/17 (Protecção das Redes e Sistemas Informáticos).",
+  "requirements": [
+    {"ref": "Princípios", "title": "Princípios da legalidade, finalidade, proporcionalidade, transparência e boa-fé", "kind": "article", "domain": "Princípios", "crosswalk": [{"framework_id": "gdpr", "ref": "Art. 5"}]},
+    {"ref": "Notificação/autorização à APD", "title": "Notificação prévia ou autorização da APD para tratamentos de dados pessoais", "kind": "obligation", "domain": "Accountability"},
+    {"ref": "Segurança", "title": "Medidas técnicas e organizativas de segurança do tratamento e sigilo profissional", "kind": "obligation", "domain": "Segurança", "crosswalk": [{"framework_id": "gdpr", "ref": "Art. 32"}]},
+    {"ref": "Subcontratação", "title": "Subcontratante actua apenas por instruções do responsável; contrato escrito", "kind": "obligation", "domain": "Subcontratação", "crosswalk": [{"framework_id": "gdpr", "ref": "Art. 28"}]},
+    {"ref": "Transferências internacionais", "title": "Transferência de dados para o estrangeiro sujeita a nível de protecção adequado ou autorização da APD", "kind": "obligation", "domain": "Transferências", "crosswalk": [{"framework_id": "gdpr", "ref": "Art. 44-49"}]},
+    {"ref": "Direitos dos titulares", "title": "Direitos de informação, acesso, rectificação, oposição e eliminação", "kind": "article", "domain": "Direitos"}
+  ]
+}

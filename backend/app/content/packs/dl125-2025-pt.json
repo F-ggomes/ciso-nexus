@@ -1,0 +1,14 @@
+{
+  "id": "dl125-2025-pt", "name": "Decreto-Lei n.º 125/2025 - Regime Jurídico da Cibersegurança (transposição da NIS2, Portugal)",
+  "kind": "law", "jurisdiction": "PT", "issuer": "Governo de Portugal / CNCS", "version": "2025", "effective_date": "2025",
+  "source_url": "https://diariodarepublica.pt/", "licensed_text": false, "pack_version": "1.0",
+  "notes": "Mapear artigos ao texto oficial publicado no Diário da República; números de artigo a confirmar na verificação VER-01 do repositório CISO.",
+  "requirements": [
+    {"ref": "Identificação de entidades", "title": "Classificação como entidade essencial ou importante e registo junto da autoridade nacional (CNCS)", "kind": "obligation", "domain": "Âmbito", "crosswalk": [{"framework_id": "nis2", "ref": "Art. 20"}]},
+    {"ref": "Governação", "title": "Responsabilidade do órgão de gestão pela aprovação e supervisão das medidas; formação do órgão de gestão", "kind": "obligation", "domain": "Governação", "crosswalk": [{"framework_id": "nis2", "ref": "Art. 20"}]},
+    {"ref": "Medidas de gestão de risco", "title": "Medidas técnicas, operacionais e organizativas proporcionais (quadro NIS2 art. 21.º) e Quadro Nacional de Referência para a Cibersegurança", "kind": "obligation", "domain": "Medidas", "crosswalk": [{"framework_id": "nis2", "ref": "Art. 21(2)(a)"}]},
+    {"ref": "Notificação de incidentes", "title": "Notificação ao CNCS/CERT.PT: alerta precoce 24h, notificação 72h, relatório final 1 mês", "kind": "obligation", "domain": "Incidentes", "crosswalk": [{"framework_id": "nis2", "ref": "Art. 23"}]},
+    {"ref": "Responsável de segurança", "title": "Designação de responsável pela segurança da informação e ponto de contacto permanente", "kind": "obligation", "domain": "Governação"},
+    {"ref": "Supervisão e sanções", "title": "Poderes de supervisão da autoridade nacional e regime contraordenacional", "kind": "obligation", "domain": "Supervisão"}
+  ]
+}

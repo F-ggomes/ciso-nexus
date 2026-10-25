@@ -1,0 +1,13 @@
+{
+  "id": "bna-ict-ao", "name": "Banco Nacional de Angola - Regulamentação de Tecnologias de Informação e Cibersegurança para Instituições Financeiras",
+  "kind": "regulation", "jurisdiction": "AO", "issuer": "Banco Nacional de Angola (BNA)", "version": "a confirmar", "effective_date": null,
+  "source_url": "https://www.bna.ao/", "licensed_text": false, "pack_version": "0.1",
+  "notes": "Pacote inicial com domínios genéricos; os Avisos/Instrutivos BNA aplicáveis (governação de TI, cibersegurança, outsourcing, continuidade) devem ser carregados por verificação na fonte primária antes de uso em auditoria.",
+  "requirements": [
+    {"ref": "Governação de TI", "title": "Estrutura de governação e responsabilidades do órgão de administração sobre TI e cibersegurança", "kind": "obligation", "domain": "Governação", "crosswalk": [{"framework_id": "dora", "ref": "Art. 5"}]},
+    {"ref": "Gestão de risco de TI", "title": "Quadro de gestão do risco de TI e cibersegurança", "kind": "obligation", "domain": "Risco", "crosswalk": [{"framework_id": "dora", "ref": "Art. 6"}]},
+    {"ref": "Outsourcing", "title": "Requisitos para contratação de serviços de TI a terceiros e notificação ao BNA", "kind": "obligation", "domain": "Terceiros", "crosswalk": [{"framework_id": "dora", "ref": "Art. 28"}]},
+    {"ref": "Incidentes", "title": "Gestão e comunicação de incidentes de cibersegurança ao BNA", "kind": "obligation", "domain": "Incidentes", "crosswalk": [{"framework_id": "dora", "ref": "Art. 19"}]},
+    {"ref": "Continuidade", "title": "Planos de continuidade de negócio e recuperação de desastres", "kind": "obligation", "domain": "Continuidade", "crosswalk": [{"framework_id": "dora", "ref": "Art. 11"}]}
+  ]
+}

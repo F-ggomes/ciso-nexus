@@ -1,0 +1,17 @@
+{
+  "id": "nist-csf-2.0", "name": "NIST Cybersecurity Framework 2.0",
+  "kind": "framework", "jurisdiction": "US", "issuer": "NIST", "version": "2.0", "effective_date": "2024-02-26",
+  "source_url": "https://doi.org/10.6028/NIST.CSWP.29", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "GV.OC", "title": "Organizational Context", "domain": "Govern"}, {"ref": "GV.RM", "title": "Risk Management Strategy", "domain": "Govern"},
+    {"ref": "GV.RR", "title": "Roles, Responsibilities, and Authorities", "domain": "Govern"}, {"ref": "GV.PO", "title": "Policy", "domain": "Govern"},
+    {"ref": "GV.OV", "title": "Oversight", "domain": "Govern"}, {"ref": "GV.SC", "title": "Cybersecurity Supply Chain Risk Management", "domain": "Govern", "crosswalk": [{"framework_id": "dora", "ref": "Art. 28"}]},
+    {"ref": "ID.AM", "title": "Asset Management", "domain": "Identify", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.9"}]}, {"ref": "ID.RA", "title": "Risk Assessment", "domain": "Identify"},
+    {"ref": "ID.IM", "title": "Improvement", "domain": "Identify"},
+    {"ref": "PR.AA", "title": "Identity Management, Authentication, and Access Control", "domain": "Protect"}, {"ref": "PR.AT", "title": "Awareness and Training", "domain": "Protect"},
+    {"ref": "PR.DS", "title": "Data Security", "domain": "Protect"}, {"ref": "PR.PS", "title": "Platform Security", "domain": "Protect"}, {"ref": "PR.IR", "title": "Technology Infrastructure Resilience", "domain": "Protect"},
+    {"ref": "DE.CM", "title": "Continuous Monitoring", "domain": "Detect"}, {"ref": "DE.AE", "title": "Adverse Event Analysis", "domain": "Detect"},
+    {"ref": "RS.MA", "title": "Incident Management", "domain": "Respond"}, {"ref": "RS.AN", "title": "Incident Analysis", "domain": "Respond"}, {"ref": "RS.CO", "title": "Incident Response Reporting and Communication", "domain": "Respond"}, {"ref": "RS.MI", "title": "Incident Mitigation", "domain": "Respond"},
+    {"ref": "RC.RP", "title": "Incident Recovery Plan Execution", "domain": "Recover"}, {"ref": "RC.CO", "title": "Incident Recovery Communication", "domain": "Recover"}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "cis-v8.1", "name": "CIS Critical Security Controls v8.1",
+  "kind": "framework", "jurisdiction": "INTL", "issuer": "Center for Internet Security", "version": "8.1", "effective_date": "2024-06-25",
+  "source_url": "https://www.cisecurity.org/controls/v8-1", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "1", "title": "Inventory and Control of Enterprise Assets", "domain": "IG1"}, {"ref": "2", "title": "Inventory and Control of Software Assets", "domain": "IG1"},
+    {"ref": "3", "title": "Data Protection", "domain": "IG1"}, {"ref": "4", "title": "Secure Configuration of Enterprise Assets and Software", "domain": "IG1"},
+    {"ref": "5", "title": "Account Management", "domain": "IG1"}, {"ref": "6", "title": "Access Control Management", "domain": "IG1"},
+    {"ref": "7", "title": "Continuous Vulnerability Management", "domain": "IG1"}, {"ref": "8", "title": "Audit Log Management", "domain": "IG1"},
+    {"ref": "9", "title": "Email and Web Browser Protections", "domain": "IG1"}, {"ref": "10", "title": "Malware Defenses", "domain": "IG1"},
+    {"ref": "11", "title": "Data Recovery", "domain": "IG1"}, {"ref": "12", "title": "Network Infrastructure Management", "domain": "IG1"},
+    {"ref": "13", "title": "Network Monitoring and Defense", "domain": "IG2"}, {"ref": "14", "title": "Security Awareness and Skills Training", "domain": "IG1"},
+    {"ref": "15", "title": "Service Provider Management", "domain": "IG1"}, {"ref": "16", "title": "Application Software Security", "domain": "IG2"},
+    {"ref": "17", "title": "Incident Response Management", "domain": "IG1"}, {"ref": "18", "title": "Penetration Testing", "domain": "IG2"}
+  ]
+}

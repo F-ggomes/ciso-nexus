@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexus}
+      POSTGRES_DB: nexus
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${NEXUS_REGISTRY:-ghcr.io/f-ggomes}/ciso-nexus-backend:${NEXUS_TAG:-latest}
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://nexus:${POSTGRES_PASSWORD:-nexus}@db:5432/nexus
+    volumes:
+      - nexusdata:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  frontend:
+    image: ${NEXUS_REGISTRY:-ghcr.io/f-ggomes}/ciso-nexus-frontend:${NEXUS_TAG:-latest}
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+  # Optional: a self-hosted GRC system of record. Remove if you use SimpleRisk/Eramba/OneTrust/Archer instead.
+  ciso-assistant-backend:
+    image: ghcr.io/intuitem/ciso-assistant-community/backend:latest
+    profiles: ["grc"]
+    environment:
+      ALLOWED_HOSTS: ciso-assistant-backend,localhost
+      CISO_ASSISTANT_URL: http://localhost:8443
+      DJANGO_DEBUG: "False"
+      POSTGRES_NAME: ciso
+      POSTGRES_USER: ciso
+      POSTGRES_PASSWORD: ${CISO_ASSISTANT_DB_PASSWORD:-ciso}
+      DB_HOST: ciso-assistant-db
+    depends_on: [ciso-assistant-db]
+  ciso-assistant-frontend:
+    image: ghcr.io/intuitem/ciso-assistant-community/frontend:latest
+    profiles: ["grc"]
+    environment:
+      PUBLIC_BACKEND_API_URL: http://ciso-assistant-backend:8000/api
+      PUBLIC_BACKEND_API_EXPOSED_URL: http://localhost:8443/api
+    ports:
+      - "8443:3000"
+    depends_on: [ciso-assistant-backend]
+  ciso-assistant-db:
+    image: postgres:16-alpine
+    profiles: ["grc"]
+    environment:
+      POSTGRES_USER: ciso
+      POSTGRES_PASSWORD: ${CISO_ASSISTANT_DB_PASSWORD:-ciso}
+      POSTGRES_DB: ciso
+    volumes:
+      - cisoassistantdb:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+  nexusdata:
+  cisoassistantdb:

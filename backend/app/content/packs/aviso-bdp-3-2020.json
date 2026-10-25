@@ -1,0 +1,12 @@
+{
+  "id": "aviso-bdp-3-2020", "name": "Aviso do Banco de Portugal n.º 3/2020 - Sistemas de governo e controlo interno (e Instrução n.º 18/2020)",
+  "kind": "regulation", "jurisdiction": "PT", "issuer": "Banco de Portugal", "version": "2020", "effective_date": "2020-07-15",
+  "source_url": "https://www.bportugal.pt/", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "Governo interno", "title": "Cultura organizacional, órgão de administração, comités, funções de controlo (gestão de risco, compliance, auditoria interna)", "kind": "obligation", "domain": "Governação"},
+    {"ref": "Gestão de riscos", "title": "Sistema de gestão de riscos, apetência pelo risco, risco de TIC e segurança", "kind": "obligation", "domain": "Risco", "crosswalk": [{"framework_id": "dora", "ref": "Art. 6"}]},
+    {"ref": "Subcontratação", "title": "Política de subcontratação alinhada com as EBA Guidelines on outsourcing (EBA/GL/2019/02)", "kind": "obligation", "domain": "Terceiros", "crosswalk": [{"framework_id": "dora", "ref": "Art. 28"}]},
+    {"ref": "Continuidade", "title": "Plano de continuidade de negócio e testes", "kind": "obligation", "domain": "Continuidade"},
+    {"ref": "Reporte", "title": "Relatório anual de autoavaliação do sistema de controlo interno (Instrução 18/2020)", "kind": "obligation", "domain": "Reporte"}
+  ]
+}

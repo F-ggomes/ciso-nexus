@@ -1,0 +1,16 @@
+{
+  "id": "iso42001-2023", "name": "ISO/IEC 42001:2023 Artificial intelligence management system",
+  "kind": "standard", "jurisdiction": "INTL", "issuer": "ISO/IEC JTC 1/SC 42", "version": "2023", "effective_date": "2023-12-18",
+  "source_url": "https://www.iso.org/standard/81230.html", "licensed_text": true, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "A.2", "title": "Policies related to AI", "domain": "Annex A"},
+    {"ref": "A.3", "title": "Internal organization - roles, responsibilities, reporting of concerns", "domain": "Annex A"},
+    {"ref": "A.4", "title": "Resources for AI systems - data, tooling, system and computing, human resources", "domain": "Annex A"},
+    {"ref": "A.5", "title": "Assessing impacts of AI systems (AI system impact assessment)", "domain": "Annex A", "crosswalk": [{"framework_id": "eu-ai-act", "ref": "Art. 27"}]},
+    {"ref": "A.6", "title": "AI system life cycle - objectives, design, verification, deployment, operation, monitoring", "domain": "Annex A", "crosswalk": [{"framework_id": "eu-ai-act", "ref": "Art. 9"}]},
+    {"ref": "A.7", "title": "Data for AI systems - quality, provenance, preparation", "domain": "Annex A", "crosswalk": [{"framework_id": "eu-ai-act", "ref": "Art. 10"}]},
+    {"ref": "A.8", "title": "Information for interested parties - documentation, transparency, incident reporting", "domain": "Annex A", "crosswalk": [{"framework_id": "eu-ai-act", "ref": "Art. 13"}]},
+    {"ref": "A.9", "title": "Use of AI systems - responsible use, intended use, objectives", "domain": "Annex A"},
+    {"ref": "A.10", "title": "Third-party and customer relationships - supplier and customer AI responsibilities", "domain": "Annex A", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.19"}]}
+  ]
+}

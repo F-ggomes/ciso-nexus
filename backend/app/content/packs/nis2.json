@@ -1,0 +1,19 @@
+{
+  "id": "nis2", "name": "Directive (EU) 2022/2555 - NIS2",
+  "kind": "regulation", "jurisdiction": "EU", "issuer": "European Parliament and Council", "version": "2022/2555", "effective_date": "2024-10-18",
+  "source_url": "https://eur-lex.europa.eu/eli/dir/2022/2555/oj", "licensed_text": false, "pack_version": "1.0",
+  "requirements": [
+    {"ref": "Art. 20", "title": "Governance - management bodies approve and oversee cybersecurity risk-management measures; training", "kind": "article", "domain": "Governance"},
+    {"ref": "Art. 21(2)(a)", "title": "Policies on risk analysis and information system security", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "6.1.2"}]},
+    {"ref": "Art. 21(2)(b)", "title": "Incident handling", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.24"}]},
+    {"ref": "Art. 21(2)(c)", "title": "Business continuity, backup management, disaster recovery, crisis management", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.30"}]},
+    {"ref": "Art. 21(2)(d)", "title": "Supply chain security, including supplier and service provider relationships", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.19"}]},
+    {"ref": "Art. 21(2)(e)", "title": "Security in acquisition, development and maintenance; vulnerability handling and disclosure", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.8"}]},
+    {"ref": "Art. 21(2)(f)", "title": "Policies and procedures to assess the effectiveness of measures", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "9.1"}]},
+    {"ref": "Art. 21(2)(g)", "title": "Basic cyber hygiene practices and cybersecurity training", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.6.3"}]},
+    {"ref": "Art. 21(2)(h)", "title": "Policies on cryptography and, where appropriate, encryption", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.24"}]},
+    {"ref": "Art. 21(2)(i)", "title": "Human resources security, access control policies and asset management", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.5.15"}]},
+    {"ref": "Art. 21(2)(j)", "title": "Multi-factor or continuous authentication, secured communications", "kind": "obligation", "domain": "Measures", "crosswalk": [{"framework_id": "iso27001-2022", "ref": "A.8.5"}]},
+    {"ref": "Art. 23", "title": "Reporting obligations - 24h early warning, 72h notification, 1-month final report", "kind": "article", "domain": "Incidents"}
+  ]
+}
