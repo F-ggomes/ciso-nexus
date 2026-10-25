@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { isAuthenticated } from './api/client';
 import Layout from './components/Layout';

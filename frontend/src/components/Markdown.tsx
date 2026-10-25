@@ -112,7 +112,7 @@ export default function Markdown({ source, className = '' }: { source: string; c
       {blocks.map((b, idx) => {
         switch (b.type) {
           case 'h': {
-            const Tag = `h${Math.min(b.level, 6)}` as keyof JSX.IntrinsicElements;
+            const Tag = `h${Math.min(b.level, 6)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
             return (
               <Tag key={idx} className={hClass[b.level] ?? hClass[6]}>
                 {renderInline(b.text)}
