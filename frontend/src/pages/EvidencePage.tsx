@@ -20,7 +20,7 @@ function Confidence({ value }: { value: number | null | undefined }) {
   const tone = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500';
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className="h-1.5 w-16 overflow-hidden rounded bg-slate-200 dark:bg-navy-800">
+      <span className="h-1.5 w-16 overflow-hidden rounded-sm bg-slate-200 dark:bg-navy-800">
         <span className={`block h-full ${tone}`} style={{ width: `${pct}%` }} />
       </span>
       <span className="tabular-nums text-2xs">{pct}%</span>
@@ -77,7 +77,7 @@ function MapDrawer({ evidence, onClose }: { evidence: Evidence | null; onClose: 
               {mappings.length === 0 && <p className="text-xs text-slate-500">No confident mappings proposed.</p>}
               <ul className="space-y-2">
                 {mappings.map((m, i) => (
-                  <li key={i} className="rounded border border-slate-200 p-2 text-xs dark:border-navy-800">
+                  <li key={i} className="rounded-sm border border-slate-200 p-2 text-xs dark:border-navy-800">
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-medium">
                         <span className="badge-accent mr-1.5">{m.framework}</span>

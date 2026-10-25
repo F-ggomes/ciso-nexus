@@ -296,7 +296,7 @@ export default function RepositoryPage() {
               <span className="text-2xs text-slate-500">{d.language}</span>
               {d.framework_id && <span className="badge-accent normal-case">{d.framework_id}</span>}
               {(d.tags ?? []).map((tg) => (
-                <span key={tg} className="rounded bg-slate-100 px-1 text-2xs dark:bg-navy-800">
+                <span key={tg} className="rounded-sm bg-slate-100 px-1 text-2xs dark:bg-navy-800">
                   {tg}
                 </span>
               ))}

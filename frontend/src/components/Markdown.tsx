@@ -16,7 +16,7 @@ function renderInline(text: string): ReactNode[] {
     if (m.index > last) out.push(text.slice(last, m.index));
     const tok = m[0];
     if (tok.startsWith('**')) out.push(<strong key={i++}>{tok.slice(2, -2)}</strong>);
-    else if (tok.startsWith('`')) out.push(<code key={i++} className="mono rounded bg-slate-100 px-1 text-[0.85em] dark:bg-navy-800">{tok.slice(1, -1)}</code>);
+    else if (tok.startsWith('`')) out.push(<code key={i++} className="mono rounded-sm bg-slate-100 px-1 text-[0.85em] dark:bg-navy-800">{tok.slice(1, -1)}</code>);
     else out.push(<em key={i++}>{tok.slice(1, -1)}</em>);
     last = m.index + tok.length;
   }
@@ -151,7 +151,7 @@ export default function Markdown({ source, className = '' }: { source: string; c
             );
           case 'code':
             return (
-              <pre key={idx} className="mono my-2 overflow-x-auto rounded bg-slate-100 p-2 text-xs dark:bg-navy-950">
+              <pre key={idx} className="mono my-2 overflow-x-auto rounded-sm bg-slate-100 p-2 text-xs dark:bg-navy-950">
                 {b.text}
               </pre>
             );

@@ -278,7 +278,7 @@ function AiSetupAssistant({ connectors, onApply }: { connectors: ConnectorExt[];
             <textarea className="input h-24" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="We run OneTrust for GRC, Wazuh and Microsoft Defender for security, Jira Service Management for tickets, Azure in West Europe, offices in Coimbra and Luanda; regulated by Banco de Portugal and BNA…" />
           </Field>
           <div className="flex items-center justify-between">
-            <div className="flex items-center overflow-hidden rounded border border-slate-300 text-xs dark:border-navy-700">
+            <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 text-xs dark:border-navy-700">
               {(
                 [
                   ['anthropic', 'Claude'],
@@ -315,7 +315,7 @@ function AiSetupAssistant({ connectors, onApply }: { connectors: ConnectorExt[];
                 {p.connectors.map((pc) => {
                   const known = connectors.find((c) => c.key === pc.key);
                   return (
-                    <div key={pc.key} className="rounded border border-slate-200 p-3 text-xs dark:border-navy-800">
+                    <div key={pc.key} className="rounded-sm border border-slate-200 p-3 text-xs dark:border-navy-800">
                       <div className="flex items-center justify-between gap-2">
                         <div>
                           <span className="font-semibold">{known?.display_name ?? pc.key}</span> <span className="mono text-2xs text-slate-500">{pc.key}</span>
@@ -357,7 +357,7 @@ function AiSetupAssistant({ connectors, onApply }: { connectors: ConnectorExt[];
                 })}
               </div>
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                <div className="rounded border border-slate-200 p-3 text-xs dark:border-navy-800">
+                <div className="rounded-sm border border-slate-200 p-3 text-xs dark:border-navy-800">
                   <h3 className="section-title mb-1">Suggested ISMS</h3>
                   <div className="mb-1 flex flex-wrap gap-1">
                     {(p.isms?.suggested_frameworks ?? []).map((f) => (
@@ -370,7 +370,7 @@ function AiSetupAssistant({ connectors, onApply }: { connectors: ConnectorExt[];
                   {p.isms?.risk_appetite && <p className="mono mt-1 text-2xs text-slate-500">{JSON.stringify(p.isms.risk_appetite)}</p>}
                   <p className="mt-2 text-2xs text-slate-500">Use the ISMS page to bootstrap with these values.</p>
                 </div>
-                <div className="rounded border border-slate-200 p-3 text-xs dark:border-navy-800">
+                <div className="rounded-sm border border-slate-200 p-3 text-xs dark:border-navy-800">
                   <h3 className="section-title mb-1">Schedule</h3>
                   <pre className="mono whitespace-pre-wrap text-2xs text-slate-600 dark:text-slate-300">{typeof p.schedule === 'string' ? p.schedule : JSON.stringify(p.schedule, null, 2)}</pre>
                   {p.open_questions?.length > 0 && (

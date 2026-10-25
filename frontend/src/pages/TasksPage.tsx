@@ -34,7 +34,7 @@ function TaskCard({ task, onDragStart }: { task: Task; onDragStart: (e: DragEven
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task)}
-      className={`cursor-grab rounded border bg-white p-2 text-xs shadow-sm active:cursor-grabbing dark:bg-navy-900 ${
+      className={`cursor-grab rounded border bg-white p-2 text-xs shadow-xs active:cursor-grabbing dark:bg-navy-900 ${
         task.overdue ? 'border-rose-300 dark:border-rose-800' : 'border-slate-200 dark:border-navy-800'
       }`}
     >
@@ -47,7 +47,7 @@ function TaskCard({ task, onDragStart }: { task: Task; onDragStart: (e: DragEven
         {task.story_points !== null && task.story_points !== undefined && <span className="badge-neutral shrink-0">{task.story_points} sp</span>}
       </div>
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-2xs text-slate-500">
-        {task.assignee && <span className="rounded bg-slate-100 px-1 dark:bg-navy-800">{task.assignee}</span>}
+        {task.assignee && <span className="rounded-sm bg-slate-100 px-1 dark:bg-navy-800">{task.assignee}</span>}
         {task.due_at && (
           <span className={`inline-flex items-center gap-0.5 ${task.overdue ? 'font-semibold text-rose-600 dark:text-rose-400' : ''}`}>
             <CalendarClock className="h-3 w-3" />
@@ -308,7 +308,7 @@ export default function TasksPage() {
                 {items.map((task) => (
                   <TaskCard key={task.id} task={task} onDragStart={onDragStart} />
                 ))}
-                {items.length === 0 && <div className="rounded border border-dashed border-slate-300 p-3 text-center text-2xs text-slate-400 dark:border-navy-700">Drop here</div>}
+                {items.length === 0 && <div className="rounded-sm border border-dashed border-slate-300 p-3 text-center text-2xs text-slate-400 dark:border-navy-700">Drop here</div>}
               </div>
               <QuickAdd status={col.key} sprint={sprint} />
             </div>

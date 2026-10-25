@@ -68,7 +68,7 @@ function HeatMap({ risks, matrix, appetite }: { risks: Risk[]; matrix?: number[]
                   <div
                     key={`${ri}-${ci}`}
                     title={`Likelihood ${l} × Impact ${i} = ${l * i} · ${count} risk(s)`}
-                    className={`flex h-9 items-center justify-center rounded text-sm font-semibold tabular-nums ${cellTone(l, i)} ${count === 0 ? 'opacity-40' : ''}`}
+                    className={`flex h-9 items-center justify-center rounded-sm text-sm font-semibold tabular-nums ${cellTone(l, i)} ${count === 0 ? 'opacity-40' : ''}`}
                   >
                     {count || ''}
                   </div>
@@ -122,7 +122,7 @@ function AcceptRiskModal({ risk, onClose }: { risk: Risk | null; onClose: () => 
     >
       {risk && (
         <div className="space-y-3">
-          <div className="rounded border border-slate-200 p-2 text-xs dark:border-navy-800">
+          <div className="rounded-sm border border-slate-200 p-2 text-xs dark:border-navy-800">
             <KV k="Inherent / residual" v={`${risk.inherent_score} / ${risk.residual_score}`} />
             <KV k="Current treatment" v={risk.treatment} />
             <KV k="Owner" v={risk.owner ?? '—'} />
@@ -228,7 +228,7 @@ function NewFromFindingModal({ open, onClose }: { open: boolean; onClose: () => 
           {!d && !draft.isPending && <p className="text-xs text-slate-500">Paste a finding and generate a draft. Nothing is saved until you approve.</p>}
           {draft.isPending && <Spinner label="Asking the risk agent…" />}
           {d && (
-            <div className="space-y-2 rounded border border-slate-200 p-3 dark:border-navy-800">
+            <div className="space-y-2 rounded-sm border border-slate-200 p-3 dark:border-navy-800">
               <div className="text-sm font-semibold text-navy-900 dark:text-slate-100">{d.title}</div>
               <p className="text-xs text-slate-600 dark:text-slate-300">{d.description}</p>
               <div>

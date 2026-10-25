@@ -203,7 +203,7 @@ function CreatePolicyModal({ open, onClose }: { open: boolean; onClose: () => vo
           </button>
         </div>
       </form>
-      <div className="max-h-[65vh] overflow-y-auto rounded border border-slate-200 p-3 dark:border-navy-800">
+      <div className="max-h-[65vh] overflow-y-auto rounded-sm border border-slate-200 p-3 dark:border-navy-800">
         <span className="label">Template preview</span>
         <TemplatePreview file={templateFile || null} />
       </div>

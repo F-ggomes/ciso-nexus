@@ -40,7 +40,7 @@ function CiaCell({ cia }: { cia: Asset['cia'] }) {
   const cell = (label: string, v: number) => (
     <span className="inline-flex items-center gap-0.5" title={`${label}: ${v}`}>
       <span className="text-2xs text-slate-500">{label}</span>
-      <span className={`inline-flex h-4 w-4 items-center justify-center rounded text-2xs font-semibold ${v >= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' : v === 2 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300'}`}>{v}</span>
+      <span className={`inline-flex h-4 w-4 items-center justify-center rounded-sm text-2xs font-semibold ${v >= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' : v === 2 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300'}`}>{v}</span>
     </span>
   );
   return (

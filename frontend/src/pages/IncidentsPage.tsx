@@ -158,15 +158,15 @@ function ClassifyDrawer({ incident, onClose }: { incident: Incident | null; onCl
       {c && (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
-            <div className={`rounded border p-2 text-center ${c.dora_major ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 dark:border-navy-800'}`}>
+            <div className={`rounded-sm border p-2 text-center ${c.dora_major ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 dark:border-navy-800'}`}>
               <div className="text-2xs font-semibold uppercase text-slate-500">DORA major</div>
               <div className="mt-1 text-sm font-semibold">{c.dora_major ? 'YES' : 'No'}</div>
             </div>
-            <div className={`rounded border p-2 text-center ${c.nis2_significant ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 dark:border-navy-800'}`}>
+            <div className={`rounded-sm border p-2 text-center ${c.nis2_significant ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 dark:border-navy-800'}`}>
               <div className="text-2xs font-semibold uppercase text-slate-500">NIS2 significant</div>
               <div className="mt-1 text-sm font-semibold">{c.nis2_significant ? 'YES' : 'No'}</div>
             </div>
-            <div className={`rounded border p-2 text-center ${c.personal_data_breach ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 dark:border-navy-800'}`}>
+            <div className={`rounded-sm border p-2 text-center ${c.personal_data_breach ? 'border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 dark:border-navy-800'}`}>
               <div className="text-2xs font-semibold uppercase text-slate-500">GDPR breach</div>
               <div className="mt-1 text-sm font-semibold">{c.personal_data_breach ? 'YES' : 'No'}</div>
             </div>

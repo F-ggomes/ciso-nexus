@@ -40,7 +40,7 @@ export function Alert({ kind = 'error', children }: { kind?: 'error' | 'info' | 
       : kind === 'success'
         ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
         : 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300';
-  return <div className={`rounded border px-3 py-2 text-xs ${cls}`}>{children}</div>;
+  return <div className={`rounded-sm border px-3 py-2 text-xs ${cls}`}>{children}</div>;
 }
 
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {

@@ -24,7 +24,7 @@ function TraceView({ trace }: { trace: ToolTrace[] }) {
   const [open, setOpen] = useState(false);
   if (!trace || trace.length === 0) return null;
   return (
-    <div className="mt-2 rounded border border-slate-200 text-2xs dark:border-navy-800">
+    <div className="mt-2 rounded-sm border border-slate-200 text-2xs dark:border-navy-800">
       <button className="flex w-full items-center gap-1 px-2 py-1 text-left font-semibold text-slate-600 dark:text-slate-300" onClick={() => setOpen((o) => !o)}>
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         <Wrench className="h-3 w-3" />
@@ -83,7 +83,7 @@ export default function CopilotPage() {
         subtitle="Read-only assistant over the GRC data. Every call is logged to the AI audit trail; decisions require human approval."
         actions={
           <>
-            <div className="flex items-center overflow-hidden rounded border border-slate-300 text-xs dark:border-navy-700">
+            <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 text-xs dark:border-navy-700">
               {(
                 [
                   ['anthropic', 'Claude'],

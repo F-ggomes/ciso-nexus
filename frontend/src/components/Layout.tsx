@@ -215,7 +215,7 @@ export default function Layout() {
           ))}
         </nav>
         <div className="border-t border-navy-800 p-2">
-          <button className="flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-xs text-slate-300 hover:bg-navy-800/60 hover:text-white" onClick={logout}>
+          <button className="flex w-full items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-slate-300 hover:bg-navy-800/60 hover:text-white" onClick={logout}>
             <LogOut className="h-4 w-4" />
             {t('nav.logout')}
           </button>
@@ -225,12 +225,12 @@ export default function Layout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 dark:border-navy-800 dark:bg-navy-900">
           <div className="flex items-center gap-3 text-xs">
-            <span className="rounded bg-navy-100 px-2 py-0.5 font-semibold text-navy-800 dark:bg-navy-800 dark:text-slate-200">{t('top.tenant')}</span>
+            <span className="rounded-sm bg-navy-100 px-2 py-0.5 font-semibold text-navy-800 dark:bg-navy-800 dark:text-slate-200">{t('top.tenant')}</span>
             <OrgSwitcher />
           </div>
           <div className="flex items-center gap-3 text-xs">
             <NotificationsBell />
-            <div className="flex items-center overflow-hidden rounded border border-slate-300 dark:border-navy-700" aria-label={t('top.language')}>
+            <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 dark:border-navy-700" aria-label={t('top.language')}>
               {(['en', 'pt'] as Lang[]).map((l) => (
                 <button
                   key={l}

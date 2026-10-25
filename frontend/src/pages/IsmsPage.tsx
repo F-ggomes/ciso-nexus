@@ -123,7 +123,7 @@ function BootstrapWizard({ onDone }: { onDone: () => void }) {
         <div className="space-y-3">
           <AppetiteSliders value={appetite} onChange={setAppetite} />
           {appetite.accept_below >= appetite.escalate_at && <Alert kind="info">"Accept below" should be lower than "Escalate at".</Alert>}
-          <div className="rounded border border-slate-200 p-3 text-xs dark:border-navy-800">
+          <div className="rounded-sm border border-slate-200 p-3 text-xs dark:border-navy-800">
             <KV k="Frameworks" v={selected.join(', ') || '—'} />
             <KV k="Language" v={language} />
             <KV k="Scope statement" v={<span className="line-clamp-3 text-left">{statement || '—'}</span>} />

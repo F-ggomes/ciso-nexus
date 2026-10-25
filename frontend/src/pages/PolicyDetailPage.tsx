@@ -122,7 +122,7 @@ export default function PolicyDetailPage() {
             <div className="card space-y-2 p-3">
               <div className="flex items-center justify-between">
                 <h2 className="section-title">AI drafting</h2>
-                <div className="flex items-center overflow-hidden rounded border border-slate-300 text-xs dark:border-navy-700">
+                <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 text-xs dark:border-navy-700">
                   {(
                     [
                       ['anthropic', 'Claude'],

@@ -88,7 +88,7 @@ function AssessDrawer({ vendor, onClose }: { vendor: Vendor | null; onClose: () 
             <textarea className="input h-24" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Leave empty to assess from the vendor record only." />
           </Field>
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex items-center overflow-hidden rounded border border-slate-300 dark:border-navy-700">
+            <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 dark:border-navy-700">
               {(
                 [
                   ['anthropic', 'Claude'],
@@ -110,7 +110,7 @@ function AssessDrawer({ vendor, onClose }: { vendor: Vendor | null; onClose: () 
           {assess.isPending && <Spinner label="Running TPRM assessment agent…" />}
 
           {a && (
-            <div className="space-y-4 rounded border border-slate-200 p-3 dark:border-navy-800">
+            <div className="space-y-4 rounded-sm border border-slate-200 p-3 dark:border-navy-800">
               <div className="flex flex-wrap items-center gap-2">
                 <TierBadge tier={a.tier} />
                 {a.supports_critical_function && <span className="badge-fail">supports CIF</span>}
