@@ -4,6 +4,9 @@ Content packs are JSON files in app/content/packs (shipped) plus any directory n
 NEXUS_CONTENT_DIR (customer-maintained). Loading is idempotent: a pack whose `pack_version`
 is unchanged is skipped; a newer version upserts requirements and keeps crosswalks.
 Licensed texts (ISO) carry refs and titles only; the full text stays with the licence holder.
+Full texts and summaries are Markdown files in app/content/texts (public-domain or freely reusable
+texts, and original summaries of licensed ones). A licence holder can add the licensed full text as
+Markdown under NEXUS_CONTENT_DIR, which is mounted at runtime and never committed or baked into images.
 
 Regulatory watch: for frameworks with a source_url, fetch the page, hash it, and flag a
 change when the hash differs from the stored one. A change creates a review task for the CISO;
@@ -14,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,10 +25,12 @@ import httpx
 from sqlalchemy.orm import Session
 
 from app.core.logging import get_logger
-from app.db.models import Framework, Requirement, Task
+from app.db.models import Framework, KnowledgeDocument, Requirement, Task
+from app.services.refs import parent_refs
 
 log = get_logger(__name__)
 PACK_DIR = Path(__file__).resolve().parent.parent / "content" / "packs"
+TEXT_DIR = Path(__file__).resolve().parent.parent / "content" / "texts"
 
 
 def _iter_packs() -> list[dict]:
@@ -73,9 +79,65 @@ def load_content_packs(db: Session, force: bool = False) -> dict[str, str]:
             row.tags = req.get("tags", [])
             row.crosswalk = req.get("crosswalk", [])
         result[pack["id"]] = status
+    db.flush()
+    result["texts"] = load_texts(db)
     db.commit()
     log.info("content.packs", result=result)
     return result
+
+
+# Preference when several documents cover a framework: the licence holder's own full text first.
+_DOC_RANK = {("legal_text", "pt-PT"): 0, ("legal_text", "en"): 1, ("summary", "pt-PT"): 2, ("summary", "en"): 3}
+_SECTION = re.compile(r"^## \[([^\]]+)\][^\n]*\n", re.M)
+
+
+def _parse_text_file(raw: str) -> tuple[dict, str]:
+    meta: dict[str, str] = {}
+    if raw.startswith("---\n"):
+        head, _, raw = raw[4:].partition("\n---\n")
+        for line in head.splitlines():
+            k, sep, v = line.partition(":")
+            if sep:
+                meta[k.strip()] = v.strip()
+    return meta, raw.strip()
+
+
+def _sections(body: str) -> dict[str, str]:
+    marks = list(_SECTION.finditer(body))
+    return {m.group(1): body[m.end():marks[i + 1].start() if i + 1 < len(marks) else len(body)].strip()
+            for i, m in enumerate(marks)}
+
+
+def load_texts(db: Session) -> str:
+    """Upsert full texts and summaries (app/content/texts and NEXUS_CONTENT_DIR) as global repository
+    documents, then copy each requirement's section into Requirement.text."""
+    files = sorted(TEXT_DIR.glob("*.md"))
+    extra = os.getenv("NEXUS_CONTENT_DIR")
+    if extra and Path(extra).exists():
+        files += sorted(Path(extra).rglob("*.md"))
+    best: dict[str, tuple[int, dict[str, str]]] = {}
+    changed = 0
+    for f in files:
+        meta, body = _parse_text_file(f.read_text(encoding="utf-8"))
+        fid, lang, kind = meta.get("framework_id"), meta.get("language", "pt-PT"), meta.get("doc_type", "legal_text")
+        if not fid or not db.get(Framework, fid):
+            continue
+        digest = hashlib.sha256(body.encode()).hexdigest()
+        doc = db.query(KnowledgeDocument).filter_by(org_id=None, framework_id=fid, language=lang, doc_type=kind).first()
+        if not doc or doc.sha256 != digest:
+            doc = doc or KnowledgeDocument(org_id=None, framework_id=fid, language=lang, doc_type=kind)
+            doc.title, doc.text, doc.sha256 = meta.get("title", fid), body, digest
+            doc.source_url, doc.file_path = meta.get("source_url", ""), f.name
+            doc.tags = [t for t in (kind, meta.get("licence", "")[:60]) if t]
+            db.add(doc)
+            changed += 1
+        rank = _DOC_RANK.get((kind, lang), 9)
+        if fid not in best or rank < best[fid][0]:
+            best[fid] = (rank, _sections(body))
+    for fid, (_, secs) in best.items():
+        for req in db.query(Requirement).filter_by(framework_id=fid).all():
+            req.text = next((secs[r] for r in parent_refs(req.ref) if r in secs), req.text)
+    return f"{len(files)} files, {changed} updated"
 
 
 async def regulatory_watch(db: Session, org_id_for_tasks: str | None = None, timeout: float = 20.0) -> list[dict]:
