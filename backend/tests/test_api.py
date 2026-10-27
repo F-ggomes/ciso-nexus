@@ -116,3 +116,13 @@ def test_connector_config_encrypted_and_validated(client):
     assert client.put("/api/v1/connectors/wazuh", headers=h, json={"settings": {"evil": 1}}).status_code == 422
     row = next(c for c in client.get("/api/v1/connectors", headers=h).json() if c["key"] == "wazuh")
     assert row["secrets_set"] == ["password", "user"] and "pw-s3cr3t" not in str(row["settings"])
+
+
+def test_policy_batch_approve(client):
+    h = _token(client)
+    p = client.post("/api/v1/policies", headers=h, json={"code": "POL-TEST-BATCH", "title": "Batch Test Policy", "doc_kind": "policy"}).json()
+    assert p["status"] == "draft"
+    res = client.post("/api/v1/policies/batch-approve", headers=h, json={"policy_ids": [p["id"]], "attest": True})
+    assert res.status_code == 200 and res.json()["approved_count"] >= 1
+    p_updated = client.get(f"/api/v1/policies/{p['id']}", headers=h).json()
+    assert p_updated["status"] == "approved"

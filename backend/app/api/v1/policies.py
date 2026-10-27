@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import DB, Org, Who
-from app.api.schemas import PolicyDraftIn, PolicyIn, PolicyVersionIn
+from app.api.schemas import BatchApproveIn, PolicyDraftIn, PolicyIn, PolicyVersionIn
 from app.core.security import require_roles
 from app.db.models import Policy, PolicyAttestation, PolicyVersion
 from app.services.policy_generator import approve, draft_policy
@@ -113,6 +113,33 @@ def approve_policy(db: DB, org: Org, who: Who, policy_id: str):
         raise HTTPException(404, "Not found")
     approve(db, p, who.sub)
     return _out(p)
+
+
+@router.post("/batch-approve", dependencies=[Depends(require_roles("ciso"))])
+def batch_approve(db: DB, org: Org, who: Who, body: BatchApproveIn):
+    """Batch approve policies for the current organization."""
+    q = db.query(Policy).filter_by(org_id=org.id)
+    if body.policy_ids:
+        q = q.filter(Policy.id.in_(body.policy_ids))
+    elif body.all_in_review:
+        q = q.filter(Policy.status == "in_review")
+    elif body.all_draft_and_review:
+        q = q.filter(Policy.status.in_(["draft", "in_review"]))
+    else:
+        q = q.filter(Policy.status != "approved")
+
+    policies_to_approve = q.all()
+    approved_count = 0
+    now = datetime.now(timezone.utc)
+    for p in policies_to_approve:
+        approve(db, p, who.sub)
+        approved_count += 1
+        if body.attest:
+            att = db.query(PolicyAttestation).filter_by(policy_id=p.id, user_email=who.sub, version=p.current_version).first()
+            if not att:
+                db.add(PolicyAttestation(policy_id=p.id, version=p.current_version, user_email=who.sub, attested_at=now))
+    db.commit()
+    return {"approved_count": approved_count, "org_id": org.id, "org_name": org.name}
 
 
 @router.post("/{policy_id}/attest")

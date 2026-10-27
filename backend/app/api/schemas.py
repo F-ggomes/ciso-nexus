@@ -114,6 +114,13 @@ class PolicyVersionIn(BaseModel):
     change_note: str = ""
 
 
+class BatchApproveIn(BaseModel):
+    policy_ids: list[str] | None = None
+    all_in_review: bool = False
+    all_draft_and_review: bool = False
+    attest: bool = True
+
+
 class RiskIn(BaseModel):
     title: str
     description: str = ""

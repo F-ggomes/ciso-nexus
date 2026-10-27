@@ -319,6 +319,8 @@ export const api = {
       request<PolicyDetail>(`/policies/${encodeURIComponent(id)}/versions`, { method: 'POST', body: { content_md, change_note } }),
     submit: (id: string) => request<Policy>(`/policies/${encodeURIComponent(id)}/submit`, { method: 'POST' }),
     approve: (id: string) => request<Policy>(`/policies/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
+    batchApprove: (body: { policy_ids?: string[]; all_in_review?: boolean; all_draft_and_review?: boolean; attest?: boolean } = {}) =>
+      request<{ approved_count: number; org_id: string; org_name: string }>('/policies/batch-approve', { method: 'POST', body }),
     attest: (id: string) => request<Attestation>(`/policies/${encodeURIComponent(id)}/attest`, { method: 'POST' }),
     attestations: (id: string) => request<Attestation[]>(`/policies/${encodeURIComponent(id)}/attestations`),
     templates: () => request<PolicyTemplate[]>('/policies/templates'),

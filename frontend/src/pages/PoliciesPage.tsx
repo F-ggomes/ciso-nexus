@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileText, Plus, Search } from 'lucide-react';
+import { CheckCircle2, FileText, Plus, Search } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, getRole } from '../api/client';
 import type { Policy, PolicyCreate, PolicyTemplate } from '../api/types';
 import DataTable, { type Column } from '../components/DataTable';
 import Markdown from '../components/Markdown';
@@ -388,7 +388,23 @@ export default function PoliciesPage() {
     }
   }, [searchParams]);
 
+  const qc = useQueryClient();
+  const role = (getRole() ?? '').toLowerCase();
+  const isCiso = role === 'ciso' || role === 'admin';
+  const [approvalNotice, setApprovalNotice] = useState<string | null>(null);
+
   const policies = useQuery({ queryKey: ['policies', kind, status], queryFn: () => api.policies.list({ doc_kind: kind || undefined, status: status || undefined }) });
+
+  const batchApproveMutation = useMutation({
+    mutationFn: () => api.policies.batchApprove({ all_draft_and_review: true, attest: true }),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['policies'] });
+      setApprovalNotice(`Sign-Off Concluído: ${res.approved_count} políticas aprovadas e formalmente atestadas pelo CISO.`);
+      setTimeout(() => setApprovalNotice(null), 6000);
+    },
+  });
+
+  const unapprovedCount = (policies.data ?? []).filter((p) => p.status !== 'approved').length;
 
   const columns: Column<Policy>[] = [
     { key: 'code', header: 'Code', render: (p) => <span className="mono text-2xs">{p.code}</span>, width: '110px' },
@@ -445,6 +461,17 @@ export default function PoliciesPage() {
                 </option>
               ))}
             </select>
+            {isCiso && unapprovedCount > 0 && (
+              <button
+                className="btn-secondary text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                onClick={() => batchApproveMutation.mutate()}
+                disabled={batchApproveMutation.isPending}
+                title="Aprovar formalmente todas as políticas pendentes com assinatura do CISO"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                {batchApproveMutation.isPending ? 'Aprovar…' : `Sign-Off & Aprovar (${unapprovedCount})`}
+              </button>
+            )}
             <button className="btn-primary" onClick={() => setCreate(true)}>
               <Plus className="h-3.5 w-3.5" />
               New document
@@ -452,6 +479,11 @@ export default function PoliciesPage() {
           </>
         }
       />
+      {approvalNotice && (
+        <Alert kind="success">
+          {approvalNotice}
+        </Alert>
+      )}
       <div className="flex gap-1 border-b border-slate-200 dark:border-navy-800">
         {(['documents', 'templates'] as const).map((k) => (
           <button
