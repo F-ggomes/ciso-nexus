@@ -10,7 +10,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "strict": true,
-    "composite": true
+    "composite": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["vite.config.ts"]
 }
