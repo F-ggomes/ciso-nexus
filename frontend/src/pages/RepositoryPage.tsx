@@ -52,7 +52,7 @@ function RequirementBrowser({ framework, onClose }: { framework: FrameworkFull |
   const reqs = useQuery({ queryKey: ['frameworks', framework?.id, 'requirements'], queryFn: () => api.frameworks.requirements(framework!.id), enabled: !!framework });
   const [domain, setDomain] = useState('');
   const [q, setQ] = useState('');
-  const domains = useMemo(() => Array.from(new Set((reqs.data ?? []).map((r) => r.domain))).toSorted(), [reqs.data]);
+  const domains = useMemo(() => [...new Set((reqs.data ?? []).map((r) => r.domain))].sort(), [reqs.data]);
   const rows: Requirement[] = (reqs.data ?? []).filter((r) => (!domain || r.domain === domain) && (!q || `${r.ref} ${r.title} ${r.text}`.toLowerCase().includes(q.toLowerCase())));
 
   return (

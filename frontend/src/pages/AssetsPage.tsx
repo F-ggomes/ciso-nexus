@@ -176,7 +176,7 @@ export default function AssetsPage() {
   const [typeFilter, setTypeFilter] = useState('');
 
   const rows = (assets.data ?? []).filter((a) => !typeFilter || a.asset_type === typeFilter);
-  const types = useMemo(() => Array.from(new Set((assets.data ?? []).map((a) => a.asset_type))).toSorted(), [assets.data]);
+  const types = useMemo(() => [...new Set((assets.data ?? []).map((a) => a.asset_type))].sort(), [assets.data]);
 
   const columns: Column<Asset>[] = [
     {

@@ -109,7 +109,7 @@ export default function EvidencePage() {
     queryFn: () => api.evidence.list({ result: result || undefined, source: source || undefined }),
   });
   const allEvidence = useQuery({ queryKey: ['evidence', '', ''], queryFn: () => api.evidence.list() });
-  const sources = useMemo(() => Array.from(new Set((allEvidence.data ?? []).map((e) => e.source))).toSorted(), [allEvidence.data]);
+  const sources = useMemo(() => [...new Set((allEvidence.data ?? []).map((e) => e.source))].sort(), [allEvidence.data]);
   const [selected, setSelected] = useState<Evidence | null>(null);
 
   const columns: Column<Evidence>[] = [

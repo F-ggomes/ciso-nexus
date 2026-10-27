@@ -48,7 +48,7 @@ function overdueDeadlines(incidents: Incident[] | undefined): OverdueRow[] {
       if (!Number.isNaN(t) && t < now) rows.push({ incident: inc, deadline: dl });
     }
   }
-  return rows.toSorted((a, b) => new Date(a.deadline.due).getTime() - new Date(b.deadline.due).getTime());
+  return [...rows].sort((a, b) => new Date(a.deadline.due).getTime() - new Date(b.deadline.due).getTime());
 }
 
 function coverageColor(pct: number) {

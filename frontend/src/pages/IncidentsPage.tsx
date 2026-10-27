@@ -233,7 +233,7 @@ export default function IncidentsPage() {
       key: 'deadlines',
       header: 'Next deadline',
       render: (r) => {
-        const ds = deadlinesOf(r).toSorted((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+        const ds = [...deadlinesOf(r)].sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
         if (ds.length === 0) return '—';
         const d = ds[0];
         const overdue = new Date(d.due).getTime() < Date.now();
