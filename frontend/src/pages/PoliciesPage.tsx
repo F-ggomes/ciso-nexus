@@ -19,11 +19,20 @@ export function PolicyStatusBadge({ status }: { status: string }) {
   return <span className={cls}>{s.replace(/_/g, ' ') || '—'}</span>;
 }
 
-const TEMPLATE_KIND_ORDER = ['policy', 'procedure', 'process'];
+const TEMPLATE_KIND_ORDER = ['policy', 'procedure', 'process', 'plan', 'guideline', 'clause'];
+
+const KIND_LABELS: Record<string, string> = {
+  policy: 'Políticas de Segurança e Governação',
+  procedure: 'Procedimentos Operacionais',
+  process: 'Processos de Gestão e Avaliação',
+  plan: 'Planos de Continuidade, Resposta e Auditoria',
+  guideline: 'Guias, Matrizes e Modelos de Registo',
+  clause: 'Cláusulas Contratuais-Tipo',
+};
 
 function groupTemplates(templates: PolicyTemplate[]) {
   const kinds = Array.from(new Set([...TEMPLATE_KIND_ORDER, ...templates.map((t) => t.kind)]));
-  return kinds.map((kind) => ({ kind, items: templates.filter((t) => t.kind === kind) })).filter((g) => g.items.length > 0);
+  return kinds.map((kind) => ({ kind, label: KIND_LABELS[kind] ?? kind, items: templates.filter((t) => t.kind === kind) })).filter((g) => g.items.length > 0);
 }
 
 function TemplatePreview({ file }: { file: string | null }) {
@@ -59,20 +68,60 @@ function TemplatesTab({ initialFilter = '' }: { initialFilter?: string }) {
   const filteredItems = allItems.filter((t) => {
     if (!filter) return true;
     const q = filter.toLowerCase();
-    if (q === 'fintech') {
+    if (q === 'fintech' || q === 'dora') {
       return (
-        t.file.includes('dora') ||
-        t.file.includes('financial') ||
-        t.file.includes('pci') ||
+        t.file.toLowerCase().includes('dora') ||
+        t.file.toLowerCase().includes('financial') ||
+        t.file.toLowerCase().includes('pci') ||
         (t.title ?? '').toLowerCase().includes('dora') ||
         (t.title ?? '').toLowerCase().includes('banc') ||
-        (t.title ?? '').toLowerCase().includes('financeir')
+        (t.title ?? '').toLowerCase().includes('financeir') ||
+        (t.title ?? '').toLowerCase().includes('pagamento')
+      );
+    }
+    if (q === 'ai' || q === 'ia') {
+      return (
+        t.file.toLowerCase().includes('ai-') ||
+        t.file.toLowerCase().includes('aims') ||
+        (t.title ?? '').toLowerCase().includes('inteligência artificial') ||
+        (t.title ?? '').toLowerCase().includes(' ia')
+      );
+    }
+    if (q === 'privacy' || q === 'rgpd') {
+      return (
+        t.file.toLowerCase().includes('priv') ||
+        t.file.toLowerCase().includes('bdp') ||
+        (t.title ?? '').toLowerCase().includes('privacid') ||
+        (t.title ?? '').toLowerCase().includes('dados') ||
+        (t.title ?? '').toLowerCase().includes('rgpd') ||
+        (t.title ?? '').toLowerCase().includes('cctv')
+      );
+    }
+    if (q === 'iso' || q === 'sgsi') {
+      return (
+        t.file.toLowerCase().startsWith('pol-') ||
+        t.file.toLowerCase().startsWith('prc-') ||
+        t.file.toLowerCase().startsWith('proc-') ||
+        (t.title ?? '').toLowerCase().includes('sgsi') ||
+        (t.title ?? '').toLowerCase().includes('segurança da informação')
+      );
+    }
+    if (q === 'audit' || q === 'risco' || q === 'tprm') {
+      return (
+        t.file.toLowerCase().includes('aud-') ||
+        t.file.toLowerCase().includes('risk-') ||
+        t.file.toLowerCase().includes('tprm-') ||
+        t.file.toLowerCase().includes('gov-') ||
+        (t.title ?? '').toLowerCase().includes('auditoria') ||
+        (t.title ?? '').toLowerCase().includes('risco') ||
+        (t.title ?? '').toLowerCase().includes('terceiro')
       );
     }
     if (q === 'software') {
       return (
         t.file.includes('software') ||
         t.file.includes('development') ||
+        t.file.includes('dev-') ||
         t.file.includes('access') ||
         t.file.includes('vulnerability') ||
         (t.title ?? '').toLowerCase().includes('software') ||
@@ -100,7 +149,7 @@ function TemplatesTab({ initialFilter = '' }: { initialFilter?: string }) {
             onChange={(e) => setFilter(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
             type="button"
             className={`btn-ghost py-1 px-2.5 text-2xs rounded-full ${!filter ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30' : ''}`}
@@ -110,10 +159,38 @@ function TemplatesTab({ initialFilter = '' }: { initialFilter?: string }) {
           </button>
           <button
             type="button"
+            className={`btn-ghost py-1 px-2.5 text-2xs rounded-full ${filter === 'ai' ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30' : ''}`}
+            onClick={() => setFilter('ai')}
+          >
+            🤖 IA & Governação
+          </button>
+          <button
+            type="button"
+            className={`btn-ghost py-1 px-2.5 text-2xs rounded-full ${filter === 'privacy' ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30' : ''}`}
+            onClick={() => setFilter('privacy')}
+          >
+            🔒 Privacidade & RGPD
+          </button>
+          <button
+            type="button"
             className={`btn-ghost py-1 px-2.5 text-2xs rounded-full ${filter === 'fintech' ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30' : ''}`}
             onClick={() => setFilter('fintech')}
           >
-            🏦 FinTech & Banca
+            🏦 FinTech & DORA
+          </button>
+          <button
+            type="button"
+            className={`btn-ghost py-1 px-2.5 text-2xs rounded-full ${filter === 'iso' ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30' : ''}`}
+            onClick={() => setFilter('iso')}
+          >
+            🛡️ SGSI / ISO 27001
+          </button>
+          <button
+            type="button"
+            className={`btn-ghost py-1 px-2.5 text-2xs rounded-full ${filter === 'audit' ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 font-bold border border-teal-500/30' : ''}`}
+            onClick={() => setFilter('audit')}
+          >
+            📋 Auditoria & TPRM
           </button>
           <button
             type="button"
@@ -139,8 +216,8 @@ function TemplatesTab({ initialFilter = '' }: { initialFilter?: string }) {
           )}
           {groupTemplates(filteredItems).map((g) => (
             <div key={g.kind}>
-              <div className="bg-slate-50 px-3 py-1 text-2xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-navy-800 dark:text-slate-400">
-                {g.kind} <span className="ml-1 text-slate-400">({g.items.length})</span>
+              <div className="bg-slate-50 px-3 py-1.5 text-2xs font-bold uppercase tracking-wider text-slate-700 dark:bg-navy-800 dark:text-slate-300 border-b border-slate-200/60 dark:border-navy-700">
+                {g.label} <span className="ml-1 font-semibold text-teal-600 dark:text-teal-400">({g.items.length})</span>
               </div>
               <ul className="divide-y divide-slate-100 dark:divide-navy-800">
                 {g.items.map((t) => (
