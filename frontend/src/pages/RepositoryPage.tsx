@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Plus, RefreshCw, Search } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 import { api, getRole } from '../api/client';
-import type { FrameworkFull, Requirement, RepositoryDocumentCreate, RepositoryHit } from '../api/types';
+import type { FrameworkFull, Requirement, RepositoryDocument, RepositoryDocumentCreate, RepositoryHit } from '../api/types';
 import Drawer from '../components/Drawer';
+import Markdown from '../components/Markdown';
 import Modal from '../components/Modal';
 import { Alert, Field, PageHeader, Spinner, errorMessage, fmtDate } from '../components/common';
 import { useI18n } from '../i18n';
@@ -72,6 +73,17 @@ function RequirementBrowser({ framework, onClose }: { framework: FrameworkFull |
         ))}
         {!reqs.isLoading && rows.length === 0 && <li className="py-4 text-center text-xs text-slate-500">No requirements match.</li>}
       </ul>
+    </Drawer>
+  );
+}
+
+function DocumentReader({ doc, onClose }: { doc: RepositoryDocument | null; onClose: () => void }) {
+  const full = useQuery({ queryKey: ['repository', 'document', doc?.id], queryFn: () => api.repository.document(doc!.id), enabled: !!doc });
+  return (
+    <Drawer open={!!doc} onClose={onClose} title={doc?.title ?? ''} subtitle={doc ? `${doc.doc_type} · ${doc.language} · ${doc.framework_id ?? ''}` : undefined} width="max-w-4xl">
+      {full.isLoading && <Spinner />}
+      {full.isError && <Alert>{errorMessage(full.error)}</Alert>}
+      {full.data?.text && <Markdown source={full.data.text.replace(/^## \[[^\]]+\] /gm, '## ')} className="text-sm" />}
     </Drawer>
   );
 }
@@ -162,6 +174,7 @@ export default function RepositoryPage() {
   const documents = useQuery({ queryKey: ['repository', 'documents'], queryFn: api.repository.documents });
   const [selected, setSelected] = useState<FrameworkFull | null>(null);
   const [addDoc, setAddDoc] = useState(false);
+  const [reading, setReading] = useState<RepositoryDocument | null>(null);
   const [q, setQ] = useState('');
   const [submittedQ, setSubmittedQ] = useState('');
   const search = useQuery({ queryKey: ['repository', 'search', submittedQ], queryFn: () => api.repository.search(submittedQ), enabled: submittedQ.length > 1 });
@@ -292,7 +305,9 @@ export default function RepositoryPage() {
           {(documents.data ?? []).map((d) => (
             <div key={d.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs">
               <span className="badge-neutral">{d.doc_type}</span>
-              <span className="font-medium">{d.title}</span>
+              <button type="button" className="font-medium hover:text-accent-600 hover:underline" onClick={() => setReading(d)}>
+                {d.title}
+              </button>
               <span className="text-2xs text-slate-500">{d.language}</span>
               {d.framework_id && <span className="badge-accent normal-case">{d.framework_id}</span>}
               {(d.tags ?? []).map((tg) => (
@@ -312,6 +327,7 @@ export default function RepositoryPage() {
       </section>
 
       <RequirementBrowser framework={selected} onClose={() => setSelected(null)} />
+      <DocumentReader doc={reading} onClose={() => setReading(null)} />
       <AddDocumentModal open={addDoc} onClose={() => setAddDoc(false)} frameworks={frameworks.data ?? []} />
     </div>
   );

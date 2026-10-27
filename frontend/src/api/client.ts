@@ -327,6 +327,7 @@ export const api = {
     reload: () => request<unknown>('/repository/reload', { method: 'POST' }),
     watch: () => request<RepositoryWatchResult>('/repository/watch', { method: 'POST' }),
     documents: () => request<RepositoryDocument[]>('/repository/documents'),
+    document: (id: string) => request<RepositoryDocument>(`/repository/documents/${id}`),
     createDocument: (body: RepositoryDocumentCreate) => request<RepositoryDocument>('/repository/documents', { method: 'POST', body }),
   },
   skills: {

@@ -21,8 +21,11 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql+psycopg://nexus:${POSTGRES_PASSWORD:-nexus}@db:5432/nexus
+      NEXUS_CONTENT_DIR: ${NEXUS_CONTENT_DIR:-/licensed}
     volumes:
       - nexusdata:/data
+      # Licensed full texts (e.g. ISO) as Markdown; local only, never committed or baked into images.
+      - ./licensed-content:/licensed:ro
     depends_on:
       db:
         condition: service_healthy
