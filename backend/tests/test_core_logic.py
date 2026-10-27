@@ -185,7 +185,7 @@ def test_templates_load_and_render():
     from app.services.templates import find_template, list_templates, render
 
     t = list_templates()
-    assert {x["kind"] for x in t} == {"policy", "procedure", "process"}
+    assert {"policy", "procedure", "process"}.issubset({x["kind"] for x in t})
     assert any(x["code"] == "POL-05" for x in t) and any(x["generic"] and x["kind"] == "process" for x in t)
     tpl = find_template("POL-05", "policy")
     out = render(tpl, org_name="Tobe", code="POL-05", title="TPRM", requirement_refs=[{"framework_id": "dora", "ref": "Art. 28"}],

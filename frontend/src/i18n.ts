@@ -4,26 +4,32 @@ export type Lang = 'en' | 'pt';
 
 const en = {
   // nav
-  'nav.overview': 'Overview',
-  'nav.risks': 'Risks',
-  'nav.incidents': 'Incidents',
-  'nav.vendors': 'Third parties',
-  'nav.evidence': 'Evidence',
-  'nav.connectors': 'Connectors',
-  'nav.copilot': 'Copilot',
-  'nav.audit': 'AI Audit',
-  'nav.isms': 'ISMS',
-  'nav.assets': 'Assets',
-  'nav.policies': 'Policies',
-  'nav.tasks': 'Tasks',
-  'nav.repository': 'Repository',
-  'nav.skills': 'Skills',
-  'nav.vulnerabilities': 'Vulnerabilities',
-  'nav.reports': 'Reports',
+  'nav.group.command': 'Command Center',
+  'nav.group.realtime': 'Real-time Risk & Incidents',
+  'nav.group.governance': 'Governance, Perimeter & TPRM',
+  'nav.group.ai': 'Artificial Intelligence & Agents',
+  'nav.group.platform': 'Platform & Connectors',
   'nav.group.govern': 'Govern',
   'nav.group.operate': 'Operate',
   'nav.group.knowledge': 'Knowledge',
-  'nav.group.platform': 'Platform',
+
+  'nav.overview': 'Consolidated CISOaaS Tower',
+  'nav.repository': 'Standards & Laws by Country',
+  'nav.policies': 'Templates & Policies (pt-PT)',
+  'nav.risks': 'Risks & 5x5 Heatmap',
+  'nav.incidents': 'Incidents & DORA Deadlines',
+  'nav.vulnerabilities': 'Vulnerabilities & SOC/SIEM',
+  'nav.easm': 'External Perimeter Radar (EASM)',
+  'nav.vendors': 'TPRM & DORA Vendors',
+  'nav.isms': 'ISMS & ISO Controls',
+  'nav.assets': 'Assets & Crown Jewels',
+  'nav.tasks': 'Tasks & Action Plans',
+  'nav.evidence': 'Evidence & Audit Trails',
+  'nav.reports': 'Executive Reports & Dossiers',
+  'nav.copilot': 'CISO Copilot AI',
+  'nav.skills': 'Skills & Agent Roles',
+  'nav.audit': 'AI Audit Trail',
+  'nav.connectors': 'Connectors & Telemetry',
   'nav.logout': 'Sign out',
   // top bar
   'top.tenant': 'Grupo | PT · EU · AO',
@@ -81,28 +87,34 @@ const en = {
   'common.all': 'All',
   'common.total': 'Total',
 };
-
 const pt: Record<keyof typeof en, string> = {
-  'nav.overview': 'Visão geral',
-  'nav.risks': 'Riscos',
-  'nav.incidents': 'Incidentes',
-  'nav.vendors': 'Terceiros',
-  'nav.evidence': 'Evidências',
-  'nav.connectors': 'Conectores',
-  'nav.copilot': 'Copiloto',
-  'nav.audit': 'Auditoria de IA',
-  'nav.isms': 'SGSI',
-  'nav.assets': 'Activos',
-  'nav.policies': 'Políticas',
-  'nav.tasks': 'Tarefas',
-  'nav.repository': 'Repositório',
-  'nav.skills': 'Competências',
-  'nav.vulnerabilities': 'Vulnerabilidades',
-  'nav.reports': 'Relatórios',
+  // nav
+  'nav.group.command': 'Centro de Comando',
+  'nav.group.realtime': 'Risco & Incidentes em Tempo Real',
+  'nav.group.governance': 'Governação, Perímetro & Terceiros',
+  'nav.group.ai': 'Inteligência Artificial & Agentes',
+  'nav.group.platform': 'Plataforma & Integrações',
   'nav.group.govern': 'Governar',
   'nav.group.operate': 'Operar',
   'nav.group.knowledge': 'Conhecimento',
-  'nav.group.platform': 'Plataforma',
+
+  'nav.overview': 'Torre CISOaaS Consolidada',
+  'nav.repository': 'Normas & Leis por País',
+  'nav.policies': 'Modelos & Minutas pt-PT',
+  'nav.risks': 'Riscos & Matriz 5x5',
+  'nav.incidents': 'Incidentes & Prazos DORA',
+  'nav.vulnerabilities': 'Vulnerabilidades & SOC/SIEM',
+  'nav.easm': 'Radar Perímetro Externo (EASM)',
+  'nav.vendors': 'TPRM & Fornecedores DORA',
+  'nav.isms': 'SGSI & Controlos ISO',
+  'nav.assets': 'Ativos & Jóias da Coroa',
+  'nav.tasks': 'Tarefas & Planos de Ação',
+  'nav.evidence': 'Evidências & Auditoria',
+  'nav.reports': 'Relatórios & Dossiês CISO',
+  'nav.copilot': 'CISO Copilot AI',
+  'nav.skills': 'Competências & Agentes',
+  'nav.audit': 'AI Audit Trail',
+  'nav.connectors': 'Conectores & Telemetria',
   'nav.logout': 'Terminar sessão',
   'top.tenant': 'Grupo | PT · EU · AO',
   'top.role': 'Perfil',
@@ -186,9 +198,9 @@ const LANG_KEY = 'nexus_lang';
 export function loadLang(): Lang {
   try {
     const v = localStorage.getItem(LANG_KEY);
-    return v === 'pt' ? 'pt' : 'en';
+    return v === 'en' ? 'en' : 'pt';
   } catch {
-    return 'en';
+    return 'pt';
   }
 }
 export function saveLang(l: Lang) {
