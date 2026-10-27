@@ -24,10 +24,18 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://nexus:${POSTGRES_PASSWORD:-nexus}@db:5432/nexus
       NEXUS_CONTENT_DIR: ${NEXUS_CONTENT_DIR:-/licensed}
+      NEXUS_LIBRARY_DIR: /library
     volumes:
       - nexusdata:/data
       # Licensed full texts (e.g. ISO) as Markdown; local only, never committed or baked into images.
       - ./licensed-content:/licensed:ro
+      # Document library (e.g. a synced Google Drive folder); local only, never committed or baked into images.
+      - type: bind
+        source: ${NEXUS_LIBRARY_HOST:-./library}
+        target: /library
+        read_only: true
+        bind:
+          create_host_path: true
     depends_on:
       db:
         condition: service_healthy
