@@ -369,8 +369,8 @@ export const api = {
       }>('/repository/grc/meta'),
     grcObligations: (params: { q?: string; law?: string; topic?: string; offset?: number; limit?: number } = {}) =>
       request<{ cols: string[]; rows: (string | number | null)[][]; total: number; laws: string[] }>('/repository/grc/obligations', { query: params }),
-    grcDrive: (params: { q?: string; category?: string; offset?: number; limit?: number } = {}) =>
-      request<{ items: (string | number | null)[][]; total: number; categories: string[] }>('/repository/grc/drive', { query: params }),
+    grcDrive: (params: { q?: string; category?: string; file_type?: string; offset?: number; limit?: number } = {}) =>
+      request<{ items: (string | number | null)[][]; total: number; categories: string[]; file_types?: string[] }>('/repository/grc/drive', { query: params }),
     grcFrameworks: (params: { q?: string; domain?: string; jurisdiction?: string; offset?: number; limit?: number } = {}) =>
       request<{
         items: {

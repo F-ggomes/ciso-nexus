@@ -174,26 +174,30 @@ def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0
 
 
 @router.get("/repository/grc/drive")
-def grc_drive(q: str = "", category: str = "", offset: int = 0, limit: int = Query(50, le=200)):
+def grc_drive(q: str = "", category: str = "", file_type: str = "", offset: int = 0, limit: int = Query(50, le=200)):
     drive_path = GRC_CONTENT_DIR / "grc_drive.json"
     if not drive_path.is_file():
-        return {"items": [], "total": 0, "categories": []}
+        return {"items": [], "total": 0, "categories": [], "file_types": []}
     items = json.loads(drive_path.read_text(encoding="utf-8"))
 
-    # Extract distinct categories (index 2)
+    # Extract distinct categories (index 2) and file types (index 5)
     categories = sorted({str(it[2]).strip() for it in items if len(it) > 2 and it[2]})
+    file_types = sorted({str(it[5]).lower().strip() for it in items if len(it) > 5 and it[5]})
 
     filtered = items
     if category:
         c_lower = category.lower()
         filtered = [it for it in filtered if len(it) > 2 and c_lower in str(it[2]).lower()]
+    if file_type:
+        ft_lower = file_type.lower()
+        filtered = [it for it in filtered if len(it) > 5 and ft_lower in str(it[5]).lower()]
     if q:
         q_lower = q.lower()
         filtered = [it for it in filtered if any(q_lower in str(cell).lower() for cell in it)]
 
     total = len(filtered)
     page_items = filtered[offset : offset + limit]
-    return {"items": page_items, "total": total, "categories": categories}
+    return {"items": page_items, "total": total, "categories": categories, "file_types": file_types}
 
 
 @router.get("/repository/grc/frameworks")

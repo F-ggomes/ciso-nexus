@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Plus, RefreshCw, Search } from 'lucide-react';
+import { Compass, ExternalLink, FolderGit2, Plus, RefreshCw, Scale, Search } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, getRole } from '../api/client';
@@ -246,12 +246,28 @@ export default function RepositoryPage() {
         actions={
           <>
             <a
-              href="/grc-library"
+              href="/grc-library?tab=drive"
               className="btn-secondary inline-flex items-center gap-1.5"
-              title="Explorar Biblioteca GRC e Visualizador Universal (322 normas, 1.484 obrigações, 5.452 ficheiros Drive)"
+              title="Aceder a 5.452 Documentos Google Drive (Políticas, Procedimentos, Guiões)"
             >
-              <ExternalLink className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-              Biblioteca GRC &amp; Visualizador
+              <FolderGit2 className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+              Documentos Drive (5.4k)
+            </a>
+            <a
+              href="/grc-library?tab=obligations"
+              className="btn-secondary inline-flex items-center gap-1.5"
+              title="Consultar 1.484 Obrigações Regulamentares (DORA, NIS2, RGPD, BNA)"
+            >
+              <Scale className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+              Obrigações Legais (1.4k)
+            </a>
+            <a
+              href="/grc-library?tab=viewer"
+              className="btn-secondary inline-flex items-center gap-1.5"
+              title="Visualizador GRC Universal & 28.757 Crosswalks"
+            >
+              <Compass className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              Visualizador GRC
             </a>
             <button type="button" className="btn-secondary" onClick={() => watch.mutate()} disabled={watch.isPending}>
               <RefreshCw className={`h-3.5 w-3.5 ${watch.isPending ? 'animate-spin' : ''}`} />

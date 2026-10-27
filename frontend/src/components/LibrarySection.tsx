@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, Download, FileText, Folder, RefreshCw, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download, FileText, Folder, RefreshCw, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { api, downloadBlob, getRole } from '../api/client';
 import type { LibraryFolder, LibraryItem } from '../api/types';
@@ -85,7 +85,7 @@ export default function LibrarySection() {
   const total = page.data?.total ?? 0;
 
   return (
-    <section>
+    <section id="library">
       <div className="mb-2 flex items-center gap-2">
         <h2 className="section-title">
           Biblioteca <span className="ml-1 text-slate-400">({tree.data?.filter((f) => f.depth === 0).reduce((n, f) => n + f.documents, 0) ?? 0})</span>
@@ -119,7 +119,21 @@ export default function LibrarySection() {
             >
               <Search className="h-3.5 w-3.5 text-slate-400" />
               <input className="input flex-1" placeholder="Pesquisar no nome e no texto…" value={q} onChange={(e) => setQ(e.target.value)} />
-              <span className="text-2xs text-slate-500">{total} documentos</span>
+              {q && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQ('');
+                    setSubmitted('');
+                    setOffset(0);
+                  }}
+                  className="btn-ghost p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  title="Limpar pesquisa"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <span className="text-2xs text-slate-500 shrink-0">{total} documentos</span>
             </form>
             {page.isLoading && <Spinner />}
             {page.isError && <Alert>{errorMessage(page.error)}</Alert>}
