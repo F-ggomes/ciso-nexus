@@ -10,6 +10,7 @@ import {
   FileBarChart,
   FileCheck2,
   FileSignature,
+  Globe,
   GraduationCap,
   KanbanSquare,
   LayoutDashboard,
@@ -44,6 +45,7 @@ const groups: { key: I18nKey | null; items: NavItem[] }[] = [
     items: [
       { to: '/incidents', key: 'nav.incidents', icon: AlertTriangle },
       { to: '/vulnerabilities', key: 'nav.vulnerabilities', icon: Bug },
+      { to: '/easm', key: 'nav.easm', icon: Globe },
       { to: '/tasks', key: 'nav.tasks', icon: KanbanSquare },
       { to: '/evidence', key: 'nav.evidence', icon: FileCheck2 },
       { to: '/reports', key: 'nav.reports', icon: FileBarChart },
@@ -76,6 +78,10 @@ function OrgSwitcher() {
     const orgs = me.data?.organizations ?? [];
     if (orgs.length === 0) return;
     const current = getOrg();
+    if (current === 'all') {
+      setOrgState('all');
+      return;
+    }
     if (!current || !orgs.some((o) => o.id === current)) {
       setOrg(orgs[0].id);
       setOrgState(orgs[0].id);
@@ -89,11 +95,13 @@ function OrgSwitcher() {
   };
 
   const orgs = me.data?.organizations ?? [];
-  const selected = orgs.find((o) => o.id === org);
+  const isCiso = me.data?.role === 'ciso' || !me.data?.org_ids || me.data.org_ids.length === 0;
+  const selected = org === 'all' ? null : orgs.find((o) => o.id === org);
   return (
     <label className="flex items-center gap-1.5 text-xs">
       <span className="hidden text-slate-500 dark:text-slate-400 sm:inline">{t('top.organization')}</span>
       <select className="input w-auto py-0.5" value={org ?? ''} onChange={(e) => change(e.target.value)} disabled={orgs.length === 0}>
+        {isCiso && <option value="all">🌐 Visão Consolidada CISOaaS (Todos os Clientes)</option>}
         {orgs.length === 0 && <option value="">—</option>}
         {orgs.map((o) => (
           <option key={o.id} value={o.id}>
@@ -101,7 +109,11 @@ function OrgSwitcher() {
           </option>
         ))}
       </select>
-      {selected && <span className="badge-neutral hidden md:inline">{selected.kind}</span>}
+      {org === 'all' ? (
+        <span className="badge-teal hidden md:inline font-mono">Consolidado</span>
+      ) : selected ? (
+        <span className="badge-neutral hidden md:inline">{selected.kind}</span>
+      ) : null}
     </label>
   );
 }
@@ -214,7 +226,17 @@ export default function Layout() {
             </div>
           ))}
         </nav>
-        <div className="border-t border-navy-800 p-2">
+        <div className="border-t border-navy-800 p-2 space-y-1.5">
+          <div className="flex items-center justify-between rounded bg-navy-950/70 px-2 py-1 text-[11px] border border-emerald-900/40 text-slate-300">
+            <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Tailscale VPN
+            </span>
+            <span className="font-mono text-2xs text-slate-400">Zero-Trust</span>
+          </div>
           <button className="flex w-full items-center gap-2 rounded-sm px-2.5 py-1.5 text-xs text-slate-300 hover:bg-navy-800/60 hover:text-white" onClick={logout}>
             <LogOut className="h-4 w-4" />
             {t('nav.logout')}

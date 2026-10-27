@@ -233,6 +233,11 @@ export async function login(username: string, password: string): Promise<TokenRe
 export const api = {
   dashboard: {
     summary: () => request<DashboardSummaryExt>('/dashboard/summary'),
+    cisoServiceSummary: () => request<any>('/dashboard/ciso-service-summary'),
+  },
+  easm: {
+    overview: () => request<any>('/easm/overview'),
+    scan: (domain: string) => request<any>('/easm/scan', { method: 'POST', body: { domain } }),
   },
   connectors: {
     list: () => request<ConnectorExt[]>('/connectors'),
@@ -327,6 +332,7 @@ export const api = {
     reload: () => request<unknown>('/repository/reload', { method: 'POST' }),
     watch: () => request<RepositoryWatchResult>('/repository/watch', { method: 'POST' }),
     documents: () => request<RepositoryDocument[]>('/repository/documents'),
+    document: (id: string) => request<RepositoryDocument>(`/repository/documents/${id}`),
     createDocument: (body: RepositoryDocumentCreate) => request<RepositoryDocument>('/repository/documents', { method: 'POST', body }),
   },
   skills: {

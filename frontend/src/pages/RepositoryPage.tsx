@@ -2,14 +2,28 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Plus, RefreshCw, Search } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
 import { api, getRole } from '../api/client';
-import type { FrameworkFull, Requirement, RepositoryDocumentCreate, RepositoryHit } from '../api/types';
+import type { FrameworkFull, Requirement, RepositoryDocument, RepositoryDocumentCreate, RepositoryHit } from '../api/types';
 import Drawer from '../components/Drawer';
+import Markdown from '../components/Markdown';
 import Modal from '../components/Modal';
 import { Alert, Field, PageHeader, Spinner, errorMessage, fmtDate } from '../components/common';
 import { useI18n } from '../i18n';
 
 const JURISDICTION_ORDER = ['PT', 'EU', 'AO', 'INTL', 'US'];
-const JURISDICTION_LABEL: Record<string, string> = { PT: 'Portugal', EU: 'European Union', AO: 'Angola', INTL: 'International', US: 'United States' };
+const JURISDICTION_LABEL: Record<string, string> = {
+  PT: 'Portugal (DL 125/2025, Lei 58/2019, BdP Aviso 3/2020)',
+  EU: 'União Europeia (DORA, NIS2, RGPD, EU AI Act, CRA)',
+  AO: 'Angola (Lei 22/11, Lei 7/17, BNA Avisos)',
+  INTL: 'Internacional (ISO 27001, 22301, 27701, 42001, PCI-DSS)',
+  US: 'Estados Unidos (NIST CSF 2.0, CIS v8.1)',
+};
+const JURISDICTION_FLAGS: Record<string, string> = {
+  PT: '🇵🇹',
+  EU: '🇪🇺',
+  AO: '🇦🇴',
+  INTL: '🌐',
+  US: '🇺🇸',
+};
 
 function KindBadge({ kind }: { kind: string }) {
   const k = (kind ?? '').toLowerCase();
@@ -72,6 +86,17 @@ function RequirementBrowser({ framework, onClose }: { framework: FrameworkFull |
         ))}
         {!reqs.isLoading && rows.length === 0 && <li className="py-4 text-center text-xs text-slate-500">No requirements match.</li>}
       </ul>
+    </Drawer>
+  );
+}
+
+function DocumentReader({ doc, onClose }: { doc: RepositoryDocument | null; onClose: () => void }) {
+  const full = useQuery({ queryKey: ['repository', 'document', doc?.id], queryFn: () => api.repository.document(doc!.id), enabled: !!doc });
+  return (
+    <Drawer open={!!doc} onClose={onClose} title={doc?.title ?? ''} subtitle={doc ? `${doc.doc_type} · ${doc.language} · ${doc.framework_id ?? ''}` : undefined} width="max-w-4xl">
+      {full.isLoading && <Spinner />}
+      {full.isError && <Alert>{errorMessage(full.error)}</Alert>}
+      {full.data?.text && <Markdown source={full.data.text.replace(/^## \[[^\]]+\] /gm, '## ')} className="text-sm" />}
     </Drawer>
   );
 }
@@ -162,6 +187,7 @@ export default function RepositoryPage() {
   const documents = useQuery({ queryKey: ['repository', 'documents'], queryFn: api.repository.documents });
   const [selected, setSelected] = useState<FrameworkFull | null>(null);
   const [addDoc, setAddDoc] = useState(false);
+  const [reading, setReading] = useState<RepositoryDocument | null>(null);
   const [q, setQ] = useState('');
   const [submittedQ, setSubmittedQ] = useState('');
   const search = useQuery({ queryKey: ['repository', 'search', submittedQ], queryFn: () => api.repository.search(submittedQ), enabled: submittedQ.length > 1 });
@@ -169,11 +195,28 @@ export default function RepositoryPage() {
   const reload = useMutation({ mutationFn: api.repository.reload, onSuccess: () => qc.invalidateQueries({ queryKey: ['frameworks'] }) });
 
   const hits: RepositoryHit[] = search.data ? (Array.isArray(search.data) ? search.data : search.data.hits ?? []) : [];
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<string>('ALL');
+
+  const countsByJurisdiction = useMemo(() => {
+    const data = frameworks.data ?? [];
+    const counts: Record<string, number> = { ALL: data.length };
+    for (const f of data) {
+      const j = (f.jurisdiction ?? 'INTL').toUpperCase();
+      counts[j] = (counts[j] || 0) + 1;
+    }
+    return counts;
+  }, [frameworks.data]);
+
   const grouped = useMemo(() => {
     const data = frameworks.data ?? [];
     const keys = Array.from(new Set([...JURISDICTION_ORDER, ...data.map((f) => (f.jurisdiction ?? 'INTL').toUpperCase())]));
     return keys.map((j) => ({ j, items: data.filter((f) => (f.jurisdiction ?? 'INTL').toUpperCase() === j) })).filter((g) => g.items.length > 0);
   }, [frameworks.data]);
+
+  const filteredGrouped = useMemo(() => {
+    if (selectedJurisdiction === 'ALL') return grouped;
+    return grouped.filter((g) => g.j === selectedJurisdiction);
+  }, [grouped, selectedJurisdiction]);
 
   return (
     <div className="space-y-4">
@@ -248,7 +291,45 @@ export default function RepositoryPage() {
 
       {frameworks.isLoading && <Spinner />}
       {frameworks.isError && <Alert>{errorMessage(frameworks.error)}</Alert>}
-      {grouped.map(({ j, items }) => (
+
+      <div className="card p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-1">Jurisdição:</span>
+          <button
+            type="button"
+            onClick={() => setSelectedJurisdiction('ALL')}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+              selectedJurisdiction === 'ALL'
+                ? 'bg-accent-600 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-navy-800 dark:text-slate-300'
+            }`}
+          >
+            <span>🌐 Todas as Jurisdições</span>
+            <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-2xs">{countsByJurisdiction['ALL'] ?? 0}</span>
+          </button>
+          {JURISDICTION_ORDER.map((code) => {
+            const count = countsByJurisdiction[code] ?? 0;
+            const active = selectedJurisdiction === code;
+            return (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setSelectedJurisdiction(code)}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  active
+                    ? 'bg-accent-600 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-navy-800 dark:text-slate-300'
+                }`}
+              >
+                <span>{JURISDICTION_FLAGS[code] || '🌐'} {code === 'INTL' ? 'Internacional' : code === 'US' ? 'EUA' : code === 'PT' ? 'Portugal' : code === 'EU' ? 'União Europeia' : 'Angola'}</span>
+                <span className={`rounded-full px-1.5 py-0.5 text-2xs ${active ? 'bg-white/20' : 'bg-black/10 dark:bg-white/10'}`}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {filteredGrouped.map(({ j, items }) => (
         <section key={j}>
           <h2 className="section-title mb-2">
             {JURISDICTION_LABEL[j] ?? j} <span className="ml-1 text-slate-400">({items.length})</span>
@@ -292,7 +373,9 @@ export default function RepositoryPage() {
           {(documents.data ?? []).map((d) => (
             <div key={d.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs">
               <span className="badge-neutral">{d.doc_type}</span>
-              <span className="font-medium">{d.title}</span>
+              <button type="button" className="font-medium hover:text-accent-600 hover:underline" onClick={() => setReading(d)}>
+                {d.title}
+              </button>
               <span className="text-2xs text-slate-500">{d.language}</span>
               {d.framework_id && <span className="badge-accent normal-case">{d.framework_id}</span>}
               {(d.tags ?? []).map((tg) => (
@@ -312,6 +395,7 @@ export default function RepositoryPage() {
       </section>
 
       <RequirementBrowser framework={selected} onClose={() => setSelected(null)} />
+      <DocumentReader doc={reading} onClose={() => setReading(null)} />
       <AddDocumentModal open={addDoc} onClose={() => setAddDoc(false)} frameworks={frameworks.data ?? []} />
     </div>
   );
