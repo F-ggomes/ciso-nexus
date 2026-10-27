@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import { I18nContext, loadLang, saveLang, translate, type I18nKey, type Lang } from './i18n';
 import AiAuditPage from './pages/AiAuditPage';
 import AssetsPage from './pages/AssetsPage';
+import GrcLibraryViewerPage from './pages/GrcLibraryViewerPage';
 import IsmsPage from './pages/IsmsPage';
 import PoliciesPage from './pages/PoliciesPage';
 import PolicyDetailPage from './pages/PolicyDetailPage';
@@ -83,6 +84,8 @@ export default function App() {
           <Route path="policies/:id" element={<PolicyDetailPage />} />
           <Route path="tasks" element={<TasksPage />} />
           <Route path="repository" element={<RepositoryPage />} />
+          <Route path="grc-library" element={<GrcLibraryViewerPage />} />
+          <Route path="viewer" element={<Navigate to="/grc-library" replace />} />
           <Route path="skills" element={<SkillsPage />} />
           <Route path="vulnerabilities" element={<VulnerabilitiesPage />} />
           <Route path="easm" element={<EasmPage />} />

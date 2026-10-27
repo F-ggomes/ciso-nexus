@@ -1,6 +1,9 @@
 """Standards repository: frameworks, requirements, knowledge documents, content-pack reload, regulatory watch."""
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 
@@ -116,3 +119,72 @@ def _import_job() -> None:
 def library_import(bg: BackgroundTasks):
     bg.add_task(_import_job)
     return {"status": "started"}
+
+
+# ---- GRC Library & Viewer integration
+@router.get("/repository/viewer.html")
+def get_viewer_html():
+    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    viewer_path = content_dir / "viewer.html"
+    if not viewer_path.is_file():
+        viewer_path = Path("/Users/fgpaulos/CISO PROJECT/viewer.html")
+    if not viewer_path.is_file():
+        raise HTTPException(404, "viewer.html not found")
+    return FileResponse(viewer_path, media_type="text/html")
+
+
+@router.get("/repository/grc/meta")
+def grc_meta():
+    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    meta_path = content_dir / "grc_meta.json"
+    if meta_path.is_file():
+        return json.loads(meta_path.read_text(encoding="utf-8"))
+    return {"built": "2026-10-27", "frameworks_count": 322, "drive_count": 5452, "obligations_count": 1484}
+
+
+@router.get("/repository/grc/obligations")
+def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0, limit: int = Query(50, le=200)):
+    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    obl_path = content_dir / "grc_obligations.json"
+    if not obl_path.is_file():
+        return {"cols": [], "rows": [], "total": 0}
+    data = json.loads(obl_path.read_text(encoding="utf-8"))
+    cols = data.get("cols", [])
+    rows = data.get("rows", [])
+    col_idx = {c: i for i, c in enumerate(cols)}
+
+    filtered = rows
+    if law:
+        l_idx = col_idx.get("law", 1)
+        filtered = [r for r in filtered if law.lower() in str(r[l_idx]).lower()]
+    if topic:
+        t_idx = col_idx.get("topic", 4)
+        filtered = [r for r in filtered if topic.lower() in str(r[t_idx]).lower()]
+    if q:
+        q_lower = q.lower()
+        filtered = [r for r in filtered if any(q_lower in str(cell).lower() for cell in r)]
+
+    total = len(filtered)
+    page_rows = filtered[offset : offset + limit]
+    return {"cols": cols, "rows": page_rows, "total": total}
+
+
+@router.get("/repository/grc/drive")
+def grc_drive(q: str = "", category: str = "", offset: int = 0, limit: int = Query(50, le=200)):
+    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    drive_path = content_dir / "grc_drive.json"
+    if not drive_path.is_file():
+        return {"items": [], "total": 0}
+    items = json.loads(drive_path.read_text(encoding="utf-8"))
+
+    filtered = items
+    if category:
+        c_lower = category.lower()
+        filtered = [it for it in filtered if len(it) > 2 and c_lower in str(it[2]).lower()]
+    if q:
+        q_lower = q.lower()
+        filtered = [it for it in filtered if any(q_lower in str(cell).lower() for cell in it)]
+
+    total = len(filtered)
+    page_items = filtered[offset : offset + limit]
+    return {"items": page_items, "total": total}

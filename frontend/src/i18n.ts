@@ -15,6 +15,7 @@ const en = {
 
   'nav.overview': 'Consolidated CISOaaS Tower',
   'nav.repository': 'Standards & Laws by Country',
+  'nav.grc_library': 'GRC Library & Universal Viewer',
   'nav.policies': 'Templates & Policies (pt-PT)',
   'nav.risks': 'Risks & 5x5 Heatmap',
   'nav.incidents': 'Incidents & DORA Deadlines',
@@ -104,6 +105,7 @@ const pt: Record<keyof typeof en, string> = {
 
   'nav.overview': 'Torre CISOaaS Consolidada',
   'nav.repository': 'Normas & Leis por País',
+  'nav.grc_library': 'Biblioteca GRC & Viewer Universal',
   'nav.policies': 'Modelos & Minutas pt-PT',
   'nav.risks': 'Riscos & Matriz 5x5',
   'nav.incidents': 'Incidentes & Prazos DORA',

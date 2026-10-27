@@ -351,6 +351,22 @@ export const api = {
       const res = await request<Response>(`/repository/library/file/${encodeURIComponent(id)}`, { raw: true });
       return res.blob();
     },
+    grcMeta: () =>
+      request<{
+        built: string;
+        frameworks_count: number;
+        drive_count: number;
+        obligations_count: number;
+        sources_count: number;
+        chats_count: number;
+        crosswalks_pairs_count: number;
+        datasets_count: number;
+        skills_count: number;
+      }>('/repository/grc/meta'),
+    grcObligations: (params: { q?: string; law?: string; topic?: string; offset?: number; limit?: number } = {}) =>
+      request<{ cols: string[]; rows: (string | number | null)[][]; total: number }>('/repository/grc/obligations', { query: params }),
+    grcDrive: (params: { q?: string; category?: string; offset?: number; limit?: number } = {}) =>
+      request<{ items: (string | number | null)[][]; total: number }>('/repository/grc/drive', { query: params }),
   },
   skills: {
     list: () => request<SkillInfo[]>('/skills'),

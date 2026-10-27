@@ -1,0 +1,302 @@
+[
+  [
+    "ISO 27002:2022 × frameworks (93 controls)",
+    "own work (previous Claude session) – review",
+    "_crosswalks/library"
+  ],
+  [
+    "NIST AIRC AI-RMF-to-ISO23894",
+    "NIST AIRC published crosswalk (US Gov; ISO IDs only)",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST AIRC AI-RMF-to-ISO42001",
+    "NIST AIRC published crosswalk (US Gov; ISO IDs only)",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST AIRC AI-RMF-to-ISO42005",
+    "NIST AIRC published crosswalk (US Gov; ISO IDs only)",
+    "_crosswalks/official"
+  ],
+  [
+    "CPRT SP800-171r3-to-800-53",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "CPRT SP800-218 SSDF references",
+    "US Gov public domain (NIST); referenced IDs only",
+    "_crosswalks/official"
+  ],
+  [
+    "CTID ME CCM4.1-ATT&CK17.1",
+    "Apache-2.0 (MITRE Engenuity CTID)",
+    "_crosswalks/official"
+  ],
+  [
+    "CTID ME CIS8.1.2-ATT&CK19.1",
+    "Apache-2.0 (MITRE Engenuity CTID)",
+    "_crosswalks/official"
+  ],
+  [
+    "CTID ME NIST800-53r5-ATT&CK16.1",
+    "Apache-2.0 (MITRE Engenuity CTID)",
+    "_crosswalks/official"
+  ],
+  [
+    "ENISA NIS2 TIG mapping v1.2",
+    "ENISA (c) 2025 - reuse authorised with acknowledgement (Decision 2011/833/EU)",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "CRI OLIR submission - CRI terms",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "Third-party OLIR submission (Razilio/independent), not ISO; IDs only",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "SCF Council OLIR submission - SCF CC BY-ND 4.0",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "CSA OLIR submission (CCM v4.0) - CSA terms",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "UK DSIT OLIR submission - OGL v3.0",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "Independent OLIR submission - OWASP CC BY-SA 4.0",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "Independent OLIR submission (not PCI SSC) - PCI DSS IDs (c) PCI SSC",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "Third-party OLIR submission (independent), not ISO; IDs only",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "CIS OLIR submission - CIS Controls CC BY-NC-SA 4.0",
+    "_crosswalks/official"
+  ],
+  [
+    "NIST-CSF2-InformativeReferences",
+    "Infoblox OLIR submission",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-109 HIPAA-SecRule-to-CSF1.1",
+    "US Gov public domain (NIST) (SP 800-66r2)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-110 HIPAA-SecRule-to-SP800-53r5.1.1",
+    "US Gov public domain (NIST) (SP 800-66r2)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-119 CSF1.1-to-CSF2.0",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-138 SP800-171r2-to-r3",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-155 SP800-53r5-to-ISO27001:2022",
+    "US Gov public domain (NIST); ISO IDs only",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-179 CSF2.0-to-SP800-171r3",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-186 CSF2.0-to-SP800-53r5.2.0",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-196 SSDF1.1-to-CSF2.0",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-57 PF1.0-to-CSF1.1",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "OLIR-59 CSF1.1-to-PF1.0",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "SP800-53r5 CSF1.1-to-800-53",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "SP800-53r5 PF-to-800-53",
+    "US Gov public domain (NIST)",
+    "_crosswalks/official"
+  ],
+  [
+    "enx-risk-control-map-derived",
+    "own work (ENX internal)",
+    "_crosswalks/own"
+  ],
+  [
+    "enx-risk-control-map",
+    "own work (ENX internal)",
+    "_crosswalks/own"
+  ],
+  [
+    "iso27002-x-frameworks",
+    "own work",
+    "_crosswalks/own"
+  ],
+  [
+    "kb-relationships",
+    "own work",
+    "_crosswalks/own"
+  ],
+  [
+    "cis81_iso27001_official",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "cis8_iso27002_official",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "cis_iso27001_hl",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "csf2_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "dora_governance_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "dora_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "dora_iso27001_integrated",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "dora_rmf_review_iso27001_mr",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "dora_rts_rmf_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "enisa_nis2ir_iso27001_csf2",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "gdpr_iso27701",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "gdpr_iso29100_iso27701_principles",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "gdpr_iso29184_notice",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "iec62443-2-1_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "isms_audit_iso19011_iso27007",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "iso27001_2013_2022",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "iso27701_iso27001_csf2",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "katakri_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "nca-ecc1_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "nca-ecc2_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "nis2_csf2",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "nis2_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ],
+  [
+    "pcidss_iso27001",
+    "licensed persona content – local use only",
+    "_crosswalks/persona"
+  ]
+]
