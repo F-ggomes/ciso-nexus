@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.v1 import ai, auth, connectors, evidence, incidents, isms, policies, reports, repository, risks, tasks, vendors
+from app.api.v1 import ai, auth, connectors, easm, evidence, incidents, isms, policies, reports, repository, risks, tasks, vendors
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import SessionLocal, init_db
@@ -44,7 +44,14 @@ def create_app() -> FastAPI:
     s = get_settings()
     app = FastAPI(title=s.app_name, version="0.1.0", lifespan=lifespan,
                   docs_url="/api/docs" if s.environment != "prod" else None, redoc_url=None, openapi_url="/api/openapi.json")
-    app.add_middleware(CORSMiddleware, allow_origins=s.cors_origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=s.cors_origins,
+        allow_origin_regex=r"https?://.*" if s.environment != "prod" else None,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.middleware("http")
     async def security_headers_and_rate_limit(request: Request, call_next):
@@ -71,9 +78,10 @@ def create_app() -> FastAPI:
         return response
 
     prefix = s.api_prefix
-    for r in (auth, connectors, repository, isms, policies, risks, vendors, incidents, evidence, tasks, reports, ai):
+    for r in (auth, connectors, repository, isms, policies, risks, vendors, incidents, evidence, tasks, reports, ai, easm):
         app.include_router(r.router, prefix=prefix)
 
+    @app.get("/health")
     @app.get(f"{prefix}/health")
     def health():
         return {"status": "ok", "app": s.app_name, "environment": s.environment}

@@ -42,6 +42,16 @@ BASELINE_DOCUMENTS = [
     ("PLAN-01", "Declaração de Aplicabilidade (SoA)", "standard", ["iso27001-2022:6.1.3"]),
     ("PLAN-02", "Plano de Tratamento do Risco", "plan", ["iso27001-2022:6.1.3"]),
     ("PLAN-03", "Plano de Formação e Sensibilização", "plan", ["iso27001-2022:A.6.3", "nis2:Art. 21(2)(g)"]),
+    ("FIN-DEV-POL-01", "Política de Desenvolvimento Seguro de Software Financeiro", "policy", ["dora:Art. 16", "dora:Art. 17", "iso27001-2022:A.8.25", "cis-v8.1:16.1"]),
+    ("DEV-POL-01", "Política de Ciclo de Vida de Desenvolvimento Seguro (SDLC)", "policy", ["iso27001-2022:A.8.25", "nis2:Art. 21(2)(e)", "cis-v8.1:16.1"]),
+    ("DORA-POL-01", "Política de Gestão de Riscos de TIC e Resiliência Operacional", "policy", ["dora:Art. 6", "dora:Art. 8", "dora:Art. 9"]),
+    ("DORA-PRC-01", "Procedimento de Notificação de Incidentes Graves de TIC", "procedure", ["dora:Art. 19", "dora:Art. 20"]),
+    ("DORA-CLA-01", "Minuta de Aditamento Contratual de TIC (DORA Art. 30.º)", "clause", ["dora:Art. 30"]),
+    ("NIS2-POL-01", "Política de Segurança das Redes e Sistemas de Informação", "policy", ["nis2:Art. 21", "dl125-2025-pt:Medidas de segurança"]),
+    ("NIS2-PRC-01", "Procedimento de Notificação de Incidentes ao CNCS", "procedure", ["nis2:Art. 23", "dl125-2025-pt:Notificação de incidentes"]),
+    ("BDP-POL-01", "Política de Governação e Segurança de TIC (BdP Aviso 3/2020)", "policy", ["dora:Art. 6", "iso27001-2022:5.1"]),
+    ("BCM-PLN-01", "Plano de Continuidade de Negócio e Recuperação de Desastres", "plan", ["iso27001-2022:A.5.30", "dora:Art. 11", "dora:Art. 12"]),
+    ("TPRM-POL-01", "Política de Gestão de Risco de Terceiros e Registo DORA", "policy", ["dora:Art. 28", "dora:Art. 30", "nis2:Art. 21(2)(d)"]),
 ]
 
 

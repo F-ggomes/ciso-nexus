@@ -15,6 +15,7 @@ import TasksPage from './pages/TasksPage';
 import VulnerabilitiesPage from './pages/VulnerabilitiesPage';
 import ConnectorsPage from './pages/ConnectorsPage';
 import CopilotPage from './pages/CopilotPage';
+import EasmPage from './pages/EasmPage';
 import EvidencePage from './pages/EvidencePage';
 import IncidentsPage from './pages/IncidentsPage';
 import LoginPage from './pages/LoginPage';
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="repository" element={<RepositoryPage />} />
           <Route path="skills" element={<SkillsPage />} />
           <Route path="vulnerabilities" element={<VulnerabilitiesPage />} />
+          <Route path="easm" element={<EasmPage />} />
           <Route path="reports" element={<ReportsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
