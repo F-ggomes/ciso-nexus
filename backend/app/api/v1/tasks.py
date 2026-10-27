@@ -1,7 +1,8 @@
 """Agile work management: Kanban tasks, sprints, notifications/reminders."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -19,7 +20,7 @@ def _out(t: Task) -> dict:
     return {"id": t.id, "title": t.title, "description": t.description, "status": t.status, "priority": t.priority, "assignee": t.assignee,
             "sprint": t.sprint, "story_points": t.story_points, "due_at": t.due_at, "recurrence": t.recurrence, "related_kind": t.related_kind,
             "related_id": t.related_id, "ticket_ref": t.ticket_ref, "completed_at": t.completed_at, "created_at": t.created_at,
-            "overdue": bool(t.due_at and t.status != "done" and t.due_at < datetime.now(timezone.utc))}
+            "overdue": bool(t.due_at and t.status != "done" and t.due_at < datetime.now(UTC))}
 
 
 @router.get("/tasks")
@@ -36,7 +37,7 @@ def board(db: DB, org: Org, sprint: str | None = None):
     q = db.query(Task).filter_by(org_id=org.id)
     if sprint:
         q = q.filter_by(sprint=sprint)
-    cols = {s: [] for s in ("backlog", "todo", "doing", "review", "done")}
+    cols: dict[str, list[dict[str, Any]]] = {s: [] for s in ("backlog", "todo", "doing", "review", "done")}
     for t in q.all():
         cols.setdefault(t.status, []).append(_out(t))
     sprints = sorted({t.sprint for t in db.query(Task).filter_by(org_id=org.id).all() if t.sprint})
@@ -59,11 +60,11 @@ def update_task(db: DB, org: Org, task_id: str, body: TaskUpdate):
     for k, v in body.model_dump(exclude_none=True).items():
         setattr(t, k, v)
     if body.status == "done" and not t.completed_at:
-        t.completed_at = datetime.now(timezone.utc)
+        t.completed_at = datetime.now(UTC)
         if t.recurrence:  # spawn the next occurrence
             nxt = Task(org_id=org.id, title=t.title, description=t.description, status="todo", priority=t.priority, assignee=t.assignee,
                        recurrence=t.recurrence, related_kind=t.related_kind, related_id=t.related_id,
-                       due_at=(t.due_at or datetime.now(timezone.utc)) + timedelta(days=_RECUR_DAYS[t.recurrence]))
+                       due_at=(t.due_at or datetime.now(UTC)) + timedelta(days=_RECUR_DAYS[t.recurrence]))
             db.add(nxt)
     db.commit()
     return _out(t)
@@ -84,7 +85,7 @@ def mark_read(db: DB, org: Org, notification_id: str):
     n = db.query(Notification).filter_by(org_id=org.id, id=notification_id).first()
     if not n:
         raise HTTPException(404, "Not found")
-    n.read_at = datetime.now(timezone.utc)
+    n.read_at = datetime.now(UTC)
     db.commit()
     return {"ok": True}
 

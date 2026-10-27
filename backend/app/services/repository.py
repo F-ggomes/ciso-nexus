@@ -18,7 +18,7 @@ import hashlib
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -88,7 +88,7 @@ def load_content_packs(db: Session, force: bool = False) -> dict[str, str]:
 
 # Preference when several documents cover a framework: the licence holder's own full text first.
 _DOC_RANK = {("legal_text", "pt-PT"): 0, ("legal_text", "en"): 1, ("summary", "pt-PT"): 2, ("summary", "en"): 3}
-_SECTION = re.compile(r"^## \[([^\]]+)\][^\n]*\n", re.M)
+_SECTION = re.compile(r"^## \[([^\]]+)\][^\n]*\n", re.MULTILINE)
 
 
 def _parse_text_file(raw: str) -> tuple[dict, str]:
@@ -150,10 +150,10 @@ async def regulatory_watch(db: Session, org_id_for_tasks: str | None = None, tim
             try:
                 r = await client.get(fw.source_url)
                 digest = hashlib.sha256(r.content).hexdigest()
-            except Exception as exc:
+            except (httpx.HTTPError, OSError) as exc:
                 log.warning("watch.fetch_failed", framework=fw.id, error=str(exc)[:200])
                 continue
-            fw.last_checked_at = datetime.now(timezone.utc)
+            fw.last_checked_at = datetime.now(UTC)
             if fw.source_sha256 and fw.source_sha256 != digest:
                 changes.append({"framework_id": fw.id, "name": fw.name, "source_url": fw.source_url})
                 if org_id_for_tasks:

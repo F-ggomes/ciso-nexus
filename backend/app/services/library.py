@@ -42,8 +42,14 @@ def resolve(rel: str) -> Path | None:
     root = library_dir()
     if not root:
         return None
-    p = (root / rel).resolve()
-    return p if p.is_file() and root.resolve() in p.parents else None
+    try:
+        resolved_root = root.resolve()
+        p = (resolved_root / rel).resolve()
+        if p.is_file() and p.is_relative_to(resolved_root) and p != resolved_root:
+            return p
+    except (ValueError, OSError):
+        return None
+    return None
 
 
 def _pdf(p: Path) -> str:
@@ -132,7 +138,7 @@ def import_library(db: Session, limit: int | None = None) -> dict:
     root = library_dir()
     if not root:
         return {"error": "NEXUS_LIBRARY_DIR is not set or not a directory"}
-    existing = {d.file_path: d for d in db.query(KnowledgeDocument).filter_by(doc_type=DOC_TYPE, org_id=None)}
+    existing = {d.file_path: d for d in db.query(KnowledgeDocument).filter_by(doc_type=DOC_TYPE, org_id=None) if d.file_path}
     stats = {"files": 0, "imported": 0, "unchanged": 0, "no_text": 0, "failed": 0, "removed": 0}
     seen: set[str] = set()
     for path in sorted(root.rglob("*")):
@@ -153,7 +159,7 @@ def import_library(db: Session, limit: int | None = None) -> dict:
         if ext in EXTRACTORS:
             try:
                 text = re.sub(r"[ \t]+\n", "\n", EXTRACTORS[ext](path)).replace("\x00", "").strip()[:MAX_TEXT]
-            except Exception as exc:  # malformed or protected files are listed without text
+            except Exception as exc:  # noqa: BLE001 - malformed or protected files are listed without text
                 stats["failed"] += 1
                 log.warning("library.extract_failed", path=rel, error=str(exc)[:200])
         folders = list(Path(rel).parent.parts)

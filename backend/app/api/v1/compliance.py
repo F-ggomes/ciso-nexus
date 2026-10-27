@@ -3,12 +3,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.api.deps import DB, Org, Who
 from app.core.security import require_roles
-from app.db.models import Organization, Policy, PolicyVersion
+from app.db.models import Policy, PolicyVersion
 from app.services.compliance_engine import compute_compliance_coverage, generate_remediation_clause
 
 router = APIRouter(tags=["compliance"])

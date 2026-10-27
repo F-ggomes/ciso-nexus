@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -62,8 +62,8 @@ def approve(db: Session, policy: Policy, approver: str) -> Policy:
     if version is None:
         raise ValueError("Policy has no current version to approve")
     version.approved_by = approver
-    version.approved_at = datetime.now(timezone.utc)
+    version.approved_at = datetime.now(UTC)
     policy.status = "approved"
-    policy.next_review_at = datetime.now(timezone.utc) + timedelta(days=30 * max(1, policy.review_cycle_months))
+    policy.next_review_at = datetime.now(UTC) + timedelta(days=30 * max(1, policy.review_cycle_months))
     db.commit()
     return policy

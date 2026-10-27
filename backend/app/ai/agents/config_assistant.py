@@ -7,7 +7,6 @@ through the model) -> health check -> save encrypted. The model never sees secre
 from __future__ import annotations
 
 import json
-
 from typing import TYPE_CHECKING
 
 from app.ai.agents.prompts import BASE_FRAME
@@ -32,7 +31,7 @@ Return JSON:
 class ConfigAssistant:
     agent = "config_assistant"
 
-    async def propose(self, db: "Session | None", description: str, actor: str, org_facts: dict | None = None, preferred=None,
+    async def propose(self, db: Session | None, description: str, actor: str, org_facts: dict | None = None, preferred=None,
                       org_id: str | None = None) -> dict:
         from app.ai.base import Message
         from app.ai.router import parse_json, router

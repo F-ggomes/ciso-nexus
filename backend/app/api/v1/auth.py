@@ -1,14 +1,21 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from datetime import UTC, datetime, timedelta
+from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import DB, Who, audit
 from app.api.schemas import OrgCreate, TokenOut, UserCreate
-from app.core.security import Principal, create_access_token, hash_password, require_roles, verify_password
+from app.core.security import (
+    Principal,
+    Role,
+    create_access_token,
+    hash_password,
+    require_roles,
+    verify_password,
+)
 from app.db.models import Organization, User
 
 router = APIRouter(tags=["auth"])
@@ -19,7 +26,7 @@ LOCK_MINUTES = 15
 @router.post("/auth/token", response_model=TokenOut)
 def token(db: DB, request: Request, form: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = db.query(User).filter_by(email=form.username.lower()).first()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if user and user.locked_until and user.locked_until > now:
         audit(db, request, form.username, "login.locked")
         raise HTTPException(423, "Account temporarily locked")
@@ -35,7 +42,7 @@ def token(db: DB, request: Request, form: Annotated[OAuth2PasswordRequestForm, D
     user.failed_logins = 0
     db.commit()
     audit(db, request, user.email, "login.ok")
-    return TokenOut(access_token=create_access_token(Principal(sub=user.email, role=user.role)), role=user.role, org_ids=user.org_ids)
+    return TokenOut(access_token=create_access_token(Principal(sub=user.email, role=cast(Role, user.role))), role=user.role, org_ids=user.org_ids)
 
 
 @router.get("/auth/me")

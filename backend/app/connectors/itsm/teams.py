@@ -1,6 +1,8 @@
 """Microsoft Teams notifications via Workflows/incoming webhook (Adaptive Card)."""
 from __future__ import annotations
 
+from typing import ClassVar
+
 import httpx
 
 from app.connectors.base import HealthStatus, ITSMConnector
@@ -13,8 +15,8 @@ _COLOUR = {"critical": "Attention", "high": "Attention", "medium": "Warning", "l
 class TeamsConnector(ITSMConnector):
     key = "teams"
     display_name = "Microsoft Teams"
-    capabilities = {"notify"}
-    config_schema = {"webhook_url": "Teams Workflows incoming webhook URL"}
+    capabilities: ClassVar[set[str]] = {"notify"}
+    config_schema: ClassVar[dict[str, str]] = {"webhook_url": "Teams Workflows incoming webhook URL"}
 
     def configured(self) -> bool:
         return bool(self.opt("webhook_url", "teams_webhook_url"))

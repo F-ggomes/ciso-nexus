@@ -8,13 +8,13 @@ Roles follow the segregation-of-duties model a CISO needs:
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, Literal
+from datetime import UTC, datetime, timedelta
+from typing import Annotated, Literal, cast
 
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-import bcrypt
 from pydantic import BaseModel
 
 from app.core.config import get_settings
@@ -43,7 +43,7 @@ def verify_password(p: str, hashed: str) -> bool:
 def create_access_token(principal: Principal) -> str:
     s = get_settings()
     payload = principal.model_dump()
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(minutes=s.access_token_minutes)
+    payload["exp"] = datetime.now(UTC) + timedelta(minutes=s.access_token_minutes)
     return jwt.encode(payload, s.secret_key.get_secret_value(), algorithm="HS256")
 
 
@@ -61,9 +61,9 @@ def current_principal(token: Annotated[str, Depends(oauth2_scheme)]) -> Principa
     db = SessionLocal()
     try:
         user = db.query(User).filter_by(email=principal.sub).first()
-        if not user or not user.is_active or (user.locked_until and user.locked_until > datetime.now(timezone.utc)):
+        if not user or not user.is_active or (user.locked_until and user.locked_until > datetime.now(UTC)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Account inactive or locked")
-        principal.role = user.role
+        principal.role = cast(Role, user.role)
     finally:
         db.close()
     return principal

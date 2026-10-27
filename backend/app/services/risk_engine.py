@@ -9,18 +9,17 @@ be applied as a reduction factor (0-1) to likelihood when treatment is 'mitigate
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:  # pragma: no cover
     from sqlalchemy.orm import Session
-    from app.db.models import Risk
+
 
 DEFAULT_APPETITE = {"accept_below": 6, "escalate_at": 15, "matrix": 5}
 
 
-def appetite_for(db: "Session", org_id: str) -> dict:
+def appetite_for(db: Session, org_id: str) -> dict:
     from app.db.models import ISMSScope
 
     scope = db.query(ISMSScope).filter_by(org_id=org_id).order_by(ISMSScope.created_at.desc()).first()
@@ -53,7 +52,7 @@ def compute(risk: Any, appetite: dict, control_effectiveness: float | None = Non
     risk.level = level_for(effective, appetite)
     if risk.review_at is None:
         months = {"critical": 3, "high": 6, "medium": 12, "low": 12}[risk.level]
-        risk.review_at = datetime.now(timezone.utc) + timedelta(days=30 * months)
+        risk.review_at = datetime.now(UTC) + timedelta(days=30 * months)
     return risk
 
 

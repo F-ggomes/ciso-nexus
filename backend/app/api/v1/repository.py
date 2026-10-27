@@ -10,9 +10,10 @@ from fastapi.responses import FileResponse
 from app.api.deps import DB, Org, Who
 from app.api.schemas import KnowledgeDocIn
 from app.core.security import require_roles
-from app.db.models import Framework, KnowledgeDocument, Requirement
+from app.db.models import Framework, KnowledgeDocument
 from app.db.session import SessionLocal
-from app.services.library import DOC_TYPE as LIBRARY, import_library, library_tree, resolve
+from app.services.library import DOC_TYPE as LIBRARY
+from app.services.library import import_library, library_tree, resolve
 from app.services.repository import framework_summary, load_content_packs, regulatory_watch
 
 router = APIRouter(tags=["repository"])
@@ -101,7 +102,7 @@ def library_documents(db: DB, who: Who, folder: str = "", q: str = "", offset: i
 @router.get("/repository/library/file/{doc_id}")
 def library_file(db: DB, who: Who, doc_id: str):
     d = db.get(KnowledgeDocument, doc_id)
-    path = resolve(d.file_path) if d and d.doc_type == LIBRARY else None
+    path = resolve(d.file_path) if d and d.doc_type == LIBRARY and d.file_path else None
     if not path:
         raise HTTPException(404, "File not available")
     return FileResponse(path, filename=path.name)
@@ -122,12 +123,14 @@ def library_import(bg: BackgroundTasks):
 
 
 # ---- GRC Library & Viewer integration
+GRC_CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / "content"
+
+
 @router.get("/repository/viewer.html")
 def get_viewer_html():
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
-    viewer_path = content_dir / "viewer.html"
+    viewer_path = GRC_CONTENT_DIR / "viewer.html"
     if not viewer_path.is_file():
-        viewer_path = Path("/Users/fgpaulos/CISO PROJECT/viewer.html")
+        viewer_path = Path(__file__).resolve().parent.parent.parent.parent.parent / "viewer.html"
     if not viewer_path.is_file():
         raise HTTPException(404, "viewer.html not found")
     return FileResponse(viewer_path, media_type="text/html")
@@ -135,8 +138,7 @@ def get_viewer_html():
 
 @router.get("/repository/grc/meta")
 def grc_meta():
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
-    meta_path = content_dir / "grc_meta.json"
+    meta_path = GRC_CONTENT_DIR / "grc_meta.json"
     if meta_path.is_file():
         return json.loads(meta_path.read_text(encoding="utf-8"))
     return {"built": "2026-10-27", "frameworks_count": 322, "drive_count": 5452, "obligations_count": 1484}
@@ -144,8 +146,7 @@ def grc_meta():
 
 @router.get("/repository/grc/obligations")
 def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0, limit: int = Query(50, le=200)):
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
-    obl_path = content_dir / "grc_obligations.json"
+    obl_path = GRC_CONTENT_DIR / "grc_obligations.json"
     if not obl_path.is_file():
         return {"cols": [], "rows": [], "total": 0, "laws": []}
     data = json.loads(obl_path.read_text(encoding="utf-8"))
@@ -155,7 +156,7 @@ def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0
 
     # Extract distinct laws
     l_idx = col_idx.get("law", 1)
-    laws = sorted(list({str(r[l_idx]).strip() for r in rows if r[l_idx]}))
+    laws = sorted({str(r[l_idx]).strip() for r in rows if r[l_idx]})
 
     filtered = rows
     if law:
@@ -174,14 +175,13 @@ def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0
 
 @router.get("/repository/grc/drive")
 def grc_drive(q: str = "", category: str = "", offset: int = 0, limit: int = Query(50, le=200)):
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
-    drive_path = content_dir / "grc_drive.json"
+    drive_path = GRC_CONTENT_DIR / "grc_drive.json"
     if not drive_path.is_file():
         return {"items": [], "total": 0, "categories": []}
     items = json.loads(drive_path.read_text(encoding="utf-8"))
 
     # Extract distinct categories (index 2)
-    categories = sorted(list({str(it[2]).strip() for it in items if len(it) > 2 and it[2]}))
+    categories = sorted({str(it[2]).strip() for it in items if len(it) > 2 and it[2]})
 
     filtered = items
     if category:
@@ -198,14 +198,13 @@ def grc_drive(q: str = "", category: str = "", offset: int = 0, limit: int = Que
 
 @router.get("/repository/grc/frameworks")
 def grc_frameworks(q: str = "", domain: str = "", jurisdiction: str = "", offset: int = 0, limit: int = Query(50, le=350)):
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
-    fw_path = content_dir / "grc_frameworks.json"
+    fw_path = GRC_CONTENT_DIR / "grc_frameworks.json"
     if not fw_path.is_file():
         return {"items": [], "total": 0, "domains": [], "jurisdictions": []}
     fws = json.loads(fw_path.read_text(encoding="utf-8"))
 
-    domains = sorted(list({f.get("domain", "") for f in fws if f.get("domain")}))
-    jurisdictions = sorted(list({f.get("jurisdiction", "") for f in fws if f.get("jurisdiction")}))
+    domains = sorted({f.get("domain", "") for f in fws if f.get("domain")})
+    jurisdictions = sorted({f.get("jurisdiction", "") for f in fws if f.get("jurisdiction")})
 
     filtered = fws
     if domain:
@@ -223,8 +222,7 @@ def grc_frameworks(q: str = "", domain: str = "", jurisdiction: str = "", offset
 
 @router.get("/repository/grc/timelines")
 def grc_timelines():
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
-    docs_path = content_dir / "grc_docs.json"
+    docs_path = GRC_CONTENT_DIR / "grc_docs.json"
     if docs_path.is_file():
         return json.loads(docs_path.read_text(encoding="utf-8"))
     return {"timelines": "<p>Incident reporting timelines</p>", "calendar": "<p>Applicability calendar</p>"}

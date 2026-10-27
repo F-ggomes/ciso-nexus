@@ -9,10 +9,7 @@ Every call writes an AIAuditLog row with hashes, tokens, latency and redaction f
 from __future__ import annotations
 
 import hashlib
-import json
 import time
-from typing import Any
-
 from typing import TYPE_CHECKING
 
 from app.ai.anthropic_provider import AnthropicProvider
@@ -58,7 +55,7 @@ class ModelRouter:
 
     async def run(
         self,
-        db: "Session | None",
+        db: Session | None,
         *,
         agent: str,
         purpose: str,
@@ -113,6 +110,6 @@ class ModelRouter:
         return completion
 
 
-from app.ai.util import parse_json  # noqa: E402,F401  (re-export)
+from app.ai.util import parse_json  # noqa: F401  (re-export)
 
 router = ModelRouter()

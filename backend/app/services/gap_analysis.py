@@ -7,12 +7,12 @@ Crosswalks let one implemented control count toward mapped requirements in other
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
 from app.db.models import Control, Evidence, Framework, GapAssessment, GapItem, Requirement, Task
-from app.services.refs import parent_refs  # noqa: F401
+from app.services.refs import parent_refs
 
 WEIGHT = {"implemented": 1.0, "partially_implemented": 0.5, "not_implemented": 0.0, "not_assessed": 0.0, "not_applicable": None}
 SEVERITY_BY_DOMAIN_KEYWORDS = [("incident", "high"), ("access", "high"), ("supplier", "high"), ("third", "high"),
@@ -36,7 +36,7 @@ def effective_status(db: Session, control: Control | None, evidence_max_age_days
         return "not_applicable"
     if control.status == "implemented":
         newest = (db.query(Evidence).filter_by(control_id=control.id).order_by(Evidence.collected_at.desc()).first())
-        if newest and newest.collected_at < datetime.now(timezone.utc) - timedelta(days=evidence_max_age_days):
+        if newest and newest.collected_at < datetime.now(UTC) - timedelta(days=evidence_max_age_days):
             return "partially_implemented"
         if newest and newest.result == "fail":
             return "partially_implemented"
@@ -95,7 +95,7 @@ def run_gap_assessment(db: Session, org_id: str, framework_id: str, create_tasks
             if create_tasks and sev in ("critical", "high"):
                 task = Task(org_id=org_id, title=rec[:500], description=f"Gap from {ga.title}. Status: {status}. Domain: {req.domain}.",
                             status="backlog", priority=sev, related_kind="gap", related_id=ga.id,
-                            due_at=datetime.now(timezone.utc) + timedelta(days=30 if sev == "critical" else 60))
+                            due_at=datetime.now(UTC) + timedelta(days=30 if sev == "critical" else 60))
                 db.add(task)
                 db.flush()
                 item.task_id = task.id

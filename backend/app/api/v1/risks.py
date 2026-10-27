@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -49,7 +49,7 @@ def create_risk(db: DB, org: Org, who: Who, body: RiskIn):
     for a in actions:
         db.add(Task(org_id=org.id, title=str(a.get("action", "Treatment action"))[:500], description=f"Risk: {r.title}. Owner role: {a.get('owner_role', '')}",
                     status="todo", priority="high" if r.level in ("high", "critical") else "medium", related_kind="risk", related_id=r.id,
-                    due_at=datetime.now(timezone.utc) + timedelta(days=int(a.get("due_days", 30)))))
+                    due_at=datetime.now(UTC) + timedelta(days=int(a.get("due_days", 30)))))
     db.commit()
     return _out(r)
 
@@ -75,7 +75,7 @@ def accept_risk(db: DB, org: Org, who: Who, request: Request, risk_id: str, body
     if not ok:
         raise HTTPException(403, why)
     r.treatment, r.accepted_by = "accept", who.sub
-    r.accepted_until = body.accepted_until or datetime.now(timezone.utc) + timedelta(days=365)
+    r.accepted_until = body.accepted_until or datetime.now(UTC) + timedelta(days=365)
     r.treatment_plan = (r.treatment_plan + "\n" if r.treatment_plan else "") + f"Accepted by {who.sub}: {body.justification}"
     db.commit()
     audit(db, request, who.sub, "risk.accepted", org_id=org.id, risk_id=r.id, level=r.level)

@@ -11,13 +11,25 @@ import hashlib
 import io
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from app.db.models import (Asset, Control, Evidence, GapAssessment, Incident, Organization, Policy, Report, Risk, Task, Vendor,
-                           Vulnerability)
+from app.db.models import (
+    Asset,
+    Control,
+    Evidence,
+    GapAssessment,
+    Incident,
+    Organization,
+    Policy,
+    Report,
+    Risk,
+    Task,
+    Vendor,
+    Vulnerability,
+)
 from app.services.gap_analysis import coverage_by_framework
 from app.services.risk_engine import heatmap
 
@@ -31,7 +43,7 @@ ROI_COLUMNS = ["entity_name", "entity_lei", "provider_name", "provider_lei", "pr
 
 # ----------------------------------------------------------------------------- data builders
 def kpis(db: Session, org_id: str) -> dict:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     risks = db.query(Risk).filter_by(org_id=org_id).all()
     open_risks = [r for r in risks if r.treatment not in ("closed",)]
     incidents = db.query(Incident).filter_by(org_id=org_id).all()
@@ -48,7 +60,7 @@ def kpis(db: Session, org_id: str) -> dict:
             try:
                 if datetime.fromisoformat(d["due"]) < now:
                     overdue_deadlines.append({"incident": i.title, **d})
-            except Exception:
+            except (ValueError, TypeError, KeyError):
                 pass
     return {
         "risks": {"total": len(risks), "open": len(open_risks), "high": len([r for r in open_risks if r.level in ("high", "critical")]),
@@ -92,7 +104,7 @@ def soa_rows(db: Session, org_id: str, framework_id: str = "iso27001-2022") -> l
         rows.append({"ref": c.requirement.ref, "title": c.requirement.title, "domain": c.requirement.domain, "applicable": c.applicable,
                      "justification": c.justification, "status": c.status, "maturity": c.maturity, "owner": c.owner or "",
                      "evidence_count": ev_count, "last_reviewed": c.last_reviewed_at.isoformat() if c.last_reviewed_at else ""})
-    rows.sort(key=lambda r: [int(p) if p.isdigit() else p for p in r["ref"].replace("A.", "").split(".")])
+    rows.sort(key=lambda r: [int(p) if p.isdigit() else p for p in str(r["ref"]).replace("A.", "").split(".")])
     return rows
 
 
@@ -171,7 +183,7 @@ def gap_rows(db: Session, org_id: str, assessment_id: str | None = None) -> list
 def ciso_brief_markdown(db: Session, org_id: str) -> str:
     org = db.get(Organization, org_id)
     k = kpis(db, org_id)
-    lines = [f"# CISO Brief - {org.name if org else org_id}", f"_Generated {datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC_", "",
+    lines = [f"# CISO Brief - {org.name if org else org_id}", f"_Generated {datetime.now(UTC):%Y-%m-%d %H:%M} UTC_", "",
              "## Posture at a glance",
              f"- Risks: {k['risks']['open']} open, {k['risks']['high']} high or critical, {k['risks']['accepted']} accepted",
              f"- Incidents: {k['incidents']['open']} open, {k['incidents']['dora_major']} DORA-major to date, {k['incidents']['overdue_notifications']} overdue regulatory notifications",
@@ -273,7 +285,7 @@ BUILDERS = {"soa": soa_rows, "risk_register": risk_rows, "roi": roi_rows, "incid
 
 def generate(db: Session, org_id: str, kind: str, fmt: str, actor: str, **kw) -> tuple[bytes, str, Report]:
     """Returns (content bytes, media type, Report row)."""
-    title = f"{kind.replace('_', ' ').title()} - {datetime.now(timezone.utc):%Y-%m-%d}"
+    title = f"{kind.replace('_', ' ').title()} - {datetime.now(UTC):%Y-%m-%d}"
     if kind in ("ciso_brief", "kpi"):
         md = ciso_brief_markdown(db, org_id) if kind == "ciso_brief" else "```json\n" + json.dumps(kpis(db, org_id), indent=2, default=str) + "\n```"
         if fmt == "md":
@@ -302,7 +314,7 @@ def generate(db: Session, org_id: str, kind: str, fmt: str, actor: str, **kw) ->
             raise ValueError("format not supported for this report")
     REPORT_DIR.joinpath(org_id).mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256(data).hexdigest()
-    path = REPORT_DIR / org_id / f"{kind}-{datetime.now(timezone.utc):%Y%m%d-%H%M%S}.{fmt}"
+    path = REPORT_DIR / org_id / f"{kind}-{datetime.now(UTC):%Y%m%d-%H%M%S}.{fmt}"
     path.write_bytes(data)
     rep = Report(org_id=org_id, kind=kind, fmt=fmt, title=title, file_path=str(path), generated_by=actor, sha256=digest,
                  content=data.decode("utf-8", errors="ignore") if fmt in ("md", "json", "csv") else "")

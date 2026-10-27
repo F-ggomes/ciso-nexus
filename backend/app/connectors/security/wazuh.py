@@ -12,7 +12,8 @@ CIS v8.1 controls 7, 8, 13.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import ClassVar
 
 import httpx
 
@@ -33,8 +34,8 @@ def _sev_from_level(level: int) -> str:
 class WazuhConnector(SecurityConnector):
     key = "wazuh"
     display_name = "Wazuh SIEM/XDR"
-    capabilities = {"findings", "evidence", "vulnerabilities", "assets"}
-    config_schema = {
+    capabilities: ClassVar[set[str]] = {"findings", "evidence", "vulnerabilities", "assets"}
+    config_schema: ClassVar[dict[str, str]] = {
         "url": "Wazuh manager API base URL, e.g. https://wazuh.example.com:55000",
         "user": "API user (read-only role recommended)",
         "password": "API password",
@@ -72,7 +73,7 @@ class WazuhConnector(SecurityConnector):
             info = await m.get_json("/")
             await m.aclose()
             return HealthStatus(ok=True, detail="manager reachable", version=info.get("data", {}).get("api_version"))
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def agents(self) -> list[dict]:
@@ -88,7 +89,7 @@ class WazuhConnector(SecurityConnector):
         idx = self._indexer()
         if not idx:
             return []
-        since = since or datetime.now(timezone.utc) - timedelta(hours=24)
+        since = since or datetime.now(UTC) - timedelta(hours=24)
         query = {
             "size": limit,
             "sort": [{"timestamp": "desc"}],
@@ -108,7 +109,7 @@ class WazuhConnector(SecurityConnector):
             out.append(Finding(
                 source=self.key, source_ref=hit["_id"], title=rule.get("description", "Wazuh alert"),
                 severity=_sev_from_level(int(rule.get("level", 0))),
-                detected_at=datetime.fromisoformat(s["timestamp"].replace("Z", "+00:00")),
+                detected_at=datetime.fromisoformat(s["timestamp"]),
                 asset=s.get("agent", {}).get("name"), rule_id=str(rule.get("id")),
                 tags=[*rule.get("groups", []), *[f"mitre:{t}" for t in rule.get("mitre", {}).get("id", [])]],
                 description=s.get("full_log", "")[:2000], raw=s,

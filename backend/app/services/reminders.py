@@ -5,18 +5,21 @@ Delivery: in-app always; Teams when configured for the organization; Jira ticket
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
 from app.connectors.base import ITSMConnector
 from app.connectors.registry import registry
+from app.core.logging import get_logger
 from app.db.models import Incident, Notification, Organization, Policy, Risk, Task, Vendor, Vulnerability
+
+log = get_logger(__name__)
 
 
 def _notify(db: Session, org_id: str, title: str, body: str, kind: str, related_kind: str, related_id: str,
             user: str | None = None) -> Notification | None:
-    recent = datetime.now(timezone.utc) - timedelta(hours=23)
+    recent = datetime.now(UTC) - timedelta(hours=23)
     if db.query(Notification).filter(Notification.org_id == org_id, Notification.kind == kind, Notification.related_kind == related_kind,
                                      Notification.related_id == related_id, Notification.created_at >= recent).first():
         return None  # one notification per object per day
@@ -26,47 +29,56 @@ def _notify(db: Session, org_id: str, title: str, body: str, kind: str, related_
 
 
 def collect_due(db: Session, org_id: str, now: datetime | None = None) -> list[Notification]:
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     created: list[Notification] = []
+
+    def _add(title: str, body: str, kind: str, related_kind: str, related_id: str, user: str | None = None) -> None:
+        n = _notify(db, org_id, title, body, kind, related_kind, related_id, user)
+        if n is not None:
+            created.append(n)
+
     # Tasks: reminders N days before and when overdue (at most once a day)
     for t in db.query(Task).filter(Task.org_id == org_id, Task.status != "done", Task.due_at.isnot(None)).all():
+        if t.due_at is None:
+            continue
         days_left = (t.due_at - now).days
         hit = days_left < 0 or days_left in (t.reminder_days_before or [7, 1])
         recently = t.last_reminded_at and (now - t.last_reminded_at) < timedelta(hours=23)
         if hit and not recently:
             state = "OVERDUE" if days_left < 0 else f"due in {days_left} day(s)"
-            created.append(_notify(db, org_id, f"Task {state}: {t.title}", t.description or "", "reminder", "task", t.id, t.assignee))
+            _add(f"Task {state}: {t.title}", t.description or "", "reminder", "task", t.id, t.assignee)
             t.last_reminded_at = now
     # Policies due for review
     for p in db.query(Policy).filter(Policy.org_id == org_id, Policy.next_review_at.isnot(None), Policy.next_review_at <= now + timedelta(days=30)).all():
-        created.append(_notify(db, org_id, f"Policy review due: {p.code} {p.title}", f"Next review {p.next_review_at:%Y-%m-%d}", "review", "policy", p.id, p.owner))
+        if p.next_review_at:
+            _add(f"Policy review due: {p.code} {p.title}", f"Next review {p.next_review_at:%Y-%m-%d}", "review", "policy", p.id, p.owner)
     # Vendor reassessments and contract ends
     for v in db.query(Vendor).filter(Vendor.org_id == org_id).all():
         if v.next_assessment_at and v.next_assessment_at <= now + timedelta(days=30):
-            created.append(_notify(db, org_id, f"Vendor reassessment due: {v.name}", f"Tier {v.tier}; due {v.next_assessment_at:%Y-%m-%d}", "review", "vendor", v.id))
+            _add(f"Vendor reassessment due: {v.name}", f"Tier {v.tier}; due {v.next_assessment_at:%Y-%m-%d}", "review", "vendor", v.id)
         if v.contract_end and v.contract_end <= now + timedelta(days=90):
-            created.append(_notify(db, org_id, f"Contract ending: {v.name}", f"Ends {v.contract_end:%Y-%m-%d}; exit strategy: {v.exit_strategy}", "contract", "vendor", v.id))
+            _add(f"Contract ending: {v.name}", f"Ends {v.contract_end:%Y-%m-%d}; exit strategy: {v.exit_strategy}", "contract", "vendor", v.id)
     # Risk reviews and accepted-risk expiry
     for r in db.query(Risk).filter(Risk.org_id == org_id, Risk.treatment != "closed").all():
         if r.review_at and r.review_at <= now + timedelta(days=14):
-            created.append(_notify(db, org_id, f"Risk review due: {r.title}", f"Level {r.level}", "review", "risk", r.id, r.owner))
+            _add(f"Risk review due: {r.title}", f"Level {r.level}", "review", "risk", r.id, r.owner)
         if r.accepted_until and r.accepted_until <= now + timedelta(days=14):
-            created.append(_notify(db, org_id, f"Risk acceptance expiring: {r.title}", f"Accepted until {r.accepted_until:%Y-%m-%d}", "review", "risk", r.id, r.owner))
+            _add(f"Risk acceptance expiring: {r.title}", f"Accepted until {r.accepted_until:%Y-%m-%d}", "review", "risk", r.id, r.owner)
     # Vulnerability SLA breaches
     for vu in db.query(Vulnerability).filter(Vulnerability.org_id == org_id, Vulnerability.status == "open", Vulnerability.due_at.isnot(None), Vulnerability.due_at < now).limit(50).all():
-        created.append(_notify(db, org_id, f"Vulnerability SLA breached: {vu.cve or vu.title[:60]} on {vu.asset_name}", f"Severity {vu.severity}", "sla", "vulnerability", vu.id))
+        _add(f"Vulnerability SLA breached: {vu.cve or vu.title[:60]} on {vu.asset_name}", f"Severity {vu.severity}", "sla", "vulnerability", vu.id)
     # Regulatory notification deadlines
     for inc in db.query(Incident).filter(Incident.org_id == org_id, Incident.status != "closed").all():
         for d in inc.notification_deadlines or []:
             try:
                 due = datetime.fromisoformat(d["due"])
-            except Exception:
+            except (ValueError, TypeError, KeyError):
                 continue
             if now <= due <= now + timedelta(hours=12) or due < now:
-                created.append(_notify(db, org_id, f"Regulatory deadline {'PASSED' if due < now else 'within 12h'}: {d['regime']}",
-                                       f"Incident: {inc.title}. Basis: {d.get('basis', '')}", "regulatory", "incident", inc.id))
+                _add(f"Regulatory deadline {'PASSED' if due < now else 'within 12h'}: {d['regime']}",
+                     f"Incident: {inc.title}. Basis: {d.get('basis', '')}", "regulatory", "incident", inc.id)
     db.commit()
-    return [n for n in created if n is not None]
+    return created
 
 
 async def deliver(db: Session, org_id: str, notifications: list[Notification]) -> int:
@@ -86,7 +98,8 @@ async def deliver(db: Session, org_id: str, notifications: list[Notification]) -
                 await jira.create_ticket(n.title, n.body, "critical", ["regulatory"])
             n.delivered = True
             delivered += 1
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 - third-party notification failure must not block delivery to other channels
+            log.warning("notification.delivery_failed", notification_id=n.id, error=str(exc)[:200])
             continue
     db.commit()
     return delivered

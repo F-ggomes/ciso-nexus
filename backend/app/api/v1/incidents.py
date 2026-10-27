@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -33,7 +33,7 @@ def list_incidents(db: DB, org: Org, status: str | None = None):
 @router.post("/incidents", status_code=201, dependencies=[Depends(require_roles("ciso", "analyst"))])
 def create_incident(db: DB, org: Org, body: IncidentIn):
     data = body.model_dump()
-    data["detected_at"] = data["detected_at"] or datetime.now(timezone.utc)
+    data["detected_at"] = data["detected_at"] or datetime.now(UTC)
     i = Incident(org_id=org.id, **data)
     db.add(i)
     db.commit()

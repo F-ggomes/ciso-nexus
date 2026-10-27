@@ -8,9 +8,11 @@ Swagger: <base>/api/schema/swagger/ when DJANGO_DEBUG=True.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar, cast
 
-from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus
+import httpx
+
+from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus, RecordKind
 from app.connectors.registry import register
 
 _KIND_PATHS = {
@@ -26,8 +28,8 @@ _KIND_PATHS = {
 class CISOAssistantConnector(GRCConnector):
     key = "ciso_assistant"
     display_name = "CISO Assistant (intuitem)"
-    capabilities = {"pull", "push", "frameworks", "tprm", "dora_roi"}
-    config_schema = {"url": "Base URL, e.g. https://ciso.example.com", "token": "Personal Access Token",
+    capabilities: ClassVar[set[str]] = {"pull", "push", "frameworks", "tprm", "dora_roi"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "Base URL, e.g. https://ciso.example.com", "token": "Personal Access Token",
                      "folder_id": "Default domain/folder id for created objects"}
 
     def configured(self) -> bool:
@@ -43,19 +45,22 @@ class CISOAssistantConnector(GRCConnector):
             data = await h.get_json("/api/build/")
             await h.aclose()
             return HealthStatus(ok=True, detail="ok", version=str(data.get("version")))
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def pull(self, kind: str, since: datetime | None = None) -> list[ExternalRecord]:
-        path = _KIND_PATHS[kind]
+        path = _KIND_PATHS.get(kind)
+        if not path:
+            return []
         h = self._http()
         out: list[ExternalRecord] = []
         try:
             url: str | None = path
+            rk = cast(RecordKind, kind)
             while url:
                 data = await h.get_json(url, params={"limit": 200} if url == path else None)
                 for item in data.get("results", data if isinstance(data, list) else []):
-                    out.append(ExternalRecord(kind=kind, external_id=str(item["id"]), data=item))  # type: ignore[arg-type]
+                    out.append(ExternalRecord(kind=rk, external_id=str(item["id"]), data=item))
                 nxt = data.get("next") if isinstance(data, dict) else None
                 url = nxt.replace(self.opt("url", "ciso_assistant_url"), "") if nxt else None
         finally:

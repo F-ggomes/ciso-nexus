@@ -7,7 +7,10 @@ from __future__ import annotations
 import json
 import os
 
-from mcp.server.fastmcp import FastMCP
+try:
+    from mcp.server.mcpserver import MCPServer as FastMCP
+except ImportError:
+    from mcp.server.fastmcp import FastMCP  # type: ignore[attr-defined,no-redef]
 
 from app.ai.agents.skills import retrieve
 from app.db.models import Organization

@@ -7,9 +7,11 @@ third-party-management/third-parties, security-incidents.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar, cast
 
-from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus
+import httpx
+
+from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus, RecordKind
 from app.connectors.registry import register
 
 _PATHS = {
@@ -25,8 +27,8 @@ _PATHS = {
 class ErambaConnector(GRCConnector):
     key = "eramba"
     display_name = "Eramba"
-    capabilities = {"pull", "push"}
-    config_schema = {"url": "Base URL, e.g. https://eramba.example.com", "api_key": "API key (Settings > API)"}
+    capabilities: ClassVar[set[str]] = {"pull", "push"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "Base URL, e.g. https://eramba.example.com", "api_key": "API key (Settings > API)"}
 
     def configured(self) -> bool:
         return bool(self.opt("url", "eramba_url") and self.opt("api_key", "eramba_api_key"))
@@ -41,7 +43,7 @@ class ErambaConnector(GRCConnector):
             await h.request("GET", _PATHS["risk"], params={"limit": 1})
             await h.aclose()
             return HealthStatus(ok=True, detail="ok")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def pull(self, kind: str, since: datetime | None = None) -> list[ExternalRecord]:
@@ -51,7 +53,8 @@ class ErambaConnector(GRCConnector):
         try:
             data = await h.get_json(_PATHS[kind], params={"limit": 500})
             items = data.get("data", data) if isinstance(data, dict) else data
-            return [ExternalRecord(kind=kind, external_id=str(i.get("id")), data=i) for i in items]
+            rk = cast(RecordKind, kind)
+            return [ExternalRecord(kind=rk, external_id=str(i.get("id")), data=i) for i in items]
         finally:
             await h.aclose()
 

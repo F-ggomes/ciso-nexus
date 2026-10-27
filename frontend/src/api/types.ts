@@ -249,6 +249,12 @@ export interface Organization {
   name: string;
   kind: string;
   country: string;
+  sector?: string;
+  parent_id?: string | null;
+  size_band?: string;
+  services_provided?: string[];
+  regulated_entity?: boolean;
+  nis2_category?: string;
 }
 
 export interface Me {

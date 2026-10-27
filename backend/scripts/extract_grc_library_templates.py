@@ -6,11 +6,9 @@ extracts content, structures, tables, and checklists from docx templates,
 and generates standardized pt-PT markdown templates in app/content/templates/.
 """
 
-import os
-import re
 import sys
-import zipfile
 import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
@@ -50,7 +48,7 @@ def get_docx_elements(docx_path: Path):
                 if rows:
                     items.append(('tbl', rows))
         return items
-    except Exception as e:
+    except (OSError, ValueError, KeyError) as e:
         print(f"Error reading {docx_path}: {e}", file=sys.stderr)
         return []
 

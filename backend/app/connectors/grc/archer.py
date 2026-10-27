@@ -8,9 +8,11 @@ then header `Authorization: Archer session-id=<token>`. Content via /api/core/co
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar, cast
 
-from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus
+import httpx
+
+from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus, RecordKind
 from app.connectors.registry import register
 
 
@@ -18,8 +20,8 @@ from app.connectors.registry import register
 class ArcherConnector(GRCConnector):
     key = "archer"
     display_name = "Archer IRM"
-    capabilities = {"pull", "push"}
-    config_schema = {"url": "Base URL, e.g. https://archer.example.com", "instance": "Instance name",
+    capabilities: ClassVar[set[str]] = {"pull", "push"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "Base URL, e.g. https://archer.example.com", "instance": "Instance name",
                      "username": "API user", "password": "API password",
                      "risk_app_id": "Archer application id holding risks", "vendor_app_id": "...vendors",
                      "incident_app_id": "...incidents"}
@@ -43,7 +45,7 @@ class ArcherConnector(GRCConnector):
             h = await self._http()
             await h.aclose()
             return HealthStatus(ok=True, detail="session established")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def applications(self) -> list[dict]:
@@ -65,7 +67,8 @@ class ArcherConnector(GRCConnector):
         try:
             data = await h.get_json(f"/api/core/content/applicationcontent/{app_id}")
             items = [i["RequestedObject"] for i in data] if isinstance(data, list) else []
-            return [ExternalRecord(kind=kind, external_id=str(i.get("Id")), data=i) for i in items]
+            rk = cast(RecordKind, kind)
+            return [ExternalRecord(kind=rk, external_id=str(i.get("Id")), data=i) for i in items]
         finally:
             await h.aclose()
 

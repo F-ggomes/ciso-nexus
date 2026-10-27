@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 
@@ -36,7 +36,7 @@ def list_vendors(db: DB, org: Org, tier: int | None = None):
 @router.post("", status_code=201, dependencies=[Depends(require_roles("ciso", "analyst"))])
 def create_vendor(db: DB, org: Org, body: VendorIn):
     v = Vendor(org_id=org.id, **body.model_dump())
-    v.next_assessment_at = datetime.now(timezone.utc) + timedelta(days=30)
+    v.next_assessment_at = datetime.now(UTC) + timedelta(days=30)
     db.add(v)
     db.commit()
     return _out(v)
@@ -71,7 +71,7 @@ async def assess(db: DB, org: Org, who: Who, vendor_id: str, body: VendorAssessI
         v.inherent_score = result.get("inherent_score") or v.inherent_score
         v.residual_score = result.get("residual_score") or v.residual_score
         v.art30_provisions = {p["provision"]: p.get("status", "unknown") for p in result.get("art30_provisions", []) if "provision" in p}
-        v.last_assessment_at = datetime.now(timezone.utc)
+        v.last_assessment_at = datetime.now(UTC)
         v.next_assessment_at = v.last_assessment_at + timedelta(days=30 * _REASSESS_MONTHS.get(v.tier, 12))
         db.commit()
     return result

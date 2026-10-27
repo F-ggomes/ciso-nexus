@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -41,7 +40,7 @@ def regulatory_deadlines(detected_at: datetime, dora_major: bool | None, nis2: b
 class IncidentClassifier:
     agent = "incident_classifier"
 
-    async def classify(self, db: "Session | None", incident: dict, actor: str = "system", org_id: str | None = None) -> dict:
+    async def classify(self, db: Session | None, incident: dict, actor: str = "system", org_id: str | None = None) -> dict:
         from app.ai.agents.prompts import INCIDENT_CLASSIFIER
         from app.ai.base import Message
         from app.ai.router import parse_json, router

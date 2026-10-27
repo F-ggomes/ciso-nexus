@@ -43,11 +43,9 @@ class ConnectorRegistry:
             raise KeyError(f"Unknown connector '{key}'")
         return CONNECTOR_CLASSES[key](cfg or {})
 
-    def for_org(self, db: "Session", org_id: str) -> dict[str, Connector]:
+    def for_org(self, db: Session, org_id: str) -> dict[str, Connector]:
         from app.core.crypto import decrypt_secrets
-        from app.db.models import ConnectorConfig
-
-        from app.db.models import Organization
+        from app.db.models import ConnectorConfig, Organization
 
         org = db.get(Organization, org_id)
         env_fallback = bool(org and org.kind == "operator")
@@ -61,7 +59,7 @@ class ConnectorRegistry:
             out[key] = cls(cfg)
         return out
 
-    def configured(self, db: "Session", org_id: str, category: str | None = None) -> list[Connector]:
+    def configured(self, db: Session, org_id: str, category: str | None = None) -> list[Connector]:
         return [c for c in self.for_org(db, org_id).values()
                 if c.configured() and c.enabled() and (category is None or c.category == category)]
 

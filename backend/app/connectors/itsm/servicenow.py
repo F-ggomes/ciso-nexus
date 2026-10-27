@@ -1,6 +1,10 @@
 """ServiceNow connector (Table API). Creates incidents or security incidents (sn_si_incident when SIR is licensed)."""
 from __future__ import annotations
 
+from typing import ClassVar
+
+import httpx
+
 from app.connectors.base import BaseHTTP, HealthStatus, ITSMConnector
 from app.connectors.registry import register
 
@@ -11,8 +15,8 @@ _URGENCY = {"critical": "1", "high": "2", "medium": "3", "low": "3"}
 class ServiceNowConnector(ITSMConnector):
     key = "servicenow"
     display_name = "ServiceNow"
-    capabilities = {"tickets"}
-    config_schema = {"url": "https://<instance>.service-now.com", "user": "Integration user", "password": "Password",
+    capabilities: ClassVar[set[str]] = {"tickets"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "https://<instance>.service-now.com", "user": "Integration user", "password": "Password",
                      "table": "incident or sn_si_incident", "assignment_group": "Assignment group name"}
 
     def configured(self) -> bool:
@@ -28,7 +32,7 @@ class ServiceNowConnector(ITSMConnector):
             await h.get_json("/api/now/table/sys_user", params={"sysparm_limit": 1})
             await h.aclose()
             return HealthStatus(ok=True, detail="ok")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def create_ticket(self, title, description, severity, labels=None) -> str:

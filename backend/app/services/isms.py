@@ -8,11 +8,10 @@ concrete 90-day plan on day one.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+import hashlib
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
-
-import hashlib
 
 from app.db.models import Control, Framework, ISMSScope, Organization, Policy, PolicyVersion, Task
 from app.services.templates import render_for_policy
@@ -110,7 +109,7 @@ def bootstrap(db: Session, org: Organization, framework_ids: list[str], scope_st
                 db.add(Control(org_id=org.id, requirement_id=req.id, applicable=True, status="not_implemented"))
                 created_controls += 1
     created_docs = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     for code, title, kind, refs in BASELINE_DOCUMENTS:
         if db.query(Policy).filter_by(org_id=org.id, code=code).first():
             continue

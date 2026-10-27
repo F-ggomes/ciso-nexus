@@ -1,6 +1,10 @@
 """Jira Cloud connector (REST API v3, basic auth with email + API token)."""
 from __future__ import annotations
 
+from typing import ClassVar
+
+import httpx
+
 from app.connectors.base import BaseHTTP, HealthStatus, ITSMConnector
 from app.connectors.registry import register
 
@@ -11,8 +15,8 @@ _PRIORITY = {"critical": "Highest", "high": "High", "medium": "Medium", "low": "
 class JiraConnector(ITSMConnector):
     key = "jira"
     display_name = "Jira"
-    capabilities = {"tickets"}
-    config_schema = {"url": "https://<site>.atlassian.net", "email": "Atlassian account email",
+    capabilities: ClassVar[set[str]] = {"tickets"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "https://<site>.atlassian.net", "email": "Atlassian account email",
                      "api_token": "API token", "project_key": "Project key, e.g. SEC", "issue_type": "Task"}
 
     def configured(self) -> bool:
@@ -27,7 +31,7 @@ class JiraConnector(ITSMConnector):
             me = await h.get_json("/rest/api/3/myself")
             await h.aclose()
             return HealthStatus(ok=True, detail=f"as {me.get('displayName')}")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def create_ticket(self, title, description, severity, labels=None) -> str:

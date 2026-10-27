@@ -23,7 +23,7 @@ def _job_sync_all():
         for org in db.query(Organization).all():
             try:
                 asyncio.run(sync_all(db, org.id))
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - one org failure must not abort other orgs
                 log.error("job.sync.failed", org=org.id, error=str(exc)[:200])
     finally:
         db.close()

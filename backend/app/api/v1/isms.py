@@ -1,7 +1,7 @@
 """ISMS scope, assets, controls (SoA) and gap assessments."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -54,7 +54,7 @@ def approve_scope(db: DB, org: Org, who: Who):
     s = db.query(ISMSScope).filter_by(org_id=org.id).first()
     if not s:
         raise HTTPException(404, "No scope")
-    s.status, s.approved_by, s.approved_at = "approved", who.sub, datetime.now(timezone.utc)
+    s.status, s.approved_by, s.approved_at = "approved", who.sub, datetime.now(UTC)
     db.commit()
     return {"ok": True}
 
@@ -113,7 +113,7 @@ def update_control(db: DB, org: Org, control_id: str, body: ControlUpdate):
         raise HTTPException(404, "Control not found")
     for k, v in body.model_dump(exclude_none=True).items():
         setattr(c, k, v)
-    c.last_reviewed_at = datetime.now(timezone.utc)
+    c.last_reviewed_at = datetime.now(UTC)
     db.commit()
     return {"ok": True}
 
@@ -143,6 +143,8 @@ def gap_detail(db: DB, org: Org, assessment_id: str):
     items = []
     for it in g.items:
         req = db.get(Requirement, it.requirement_id)
+        if not req:
+            continue
         items.append({"ref": req.ref, "title": req.title, "domain": req.domain, "status": it.current_status, "severity": it.gap_severity,
                       "recommendation": it.recommendation, "task_id": it.task_id})
     return {"id": g.id, "title": g.title, "coverage_pct": g.coverage_pct, "summary": g.summary, "items": items}

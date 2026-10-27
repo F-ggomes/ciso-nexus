@@ -11,7 +11,10 @@ A.8.8 (Defender recommendations), A.8.15 (activity logs); DORA Art. 9; CIS v8.1 
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import ClassVar
+
+import httpx
 
 from app.connectors.base import BaseHTTP, EvidenceArtefact, Finding, HealthStatus, SecurityConnector
 from app.connectors.registry import register
@@ -24,8 +27,8 @@ ARM = "https://management.azure.com"
 class AzureConnector(SecurityConnector):
     key = "azure"
     display_name = "Microsoft Azure / Entra ID / Defender"
-    capabilities = {"findings", "evidence", "assets", "identity"}
-    config_schema = {
+    capabilities: ClassVar[set[str]] = {"findings", "evidence", "assets", "identity"}
+    config_schema: ClassVar[dict[str, str]] = {
         "tenant_id": "Entra tenant id",
         "client_id": "App registration client id",
         "client_secret": "App registration client secret (or use certificate in production)",
@@ -66,7 +69,7 @@ class AzureConnector(SecurityConnector):
             await g.aclose()
             name = (org.get("value") or [{}])[0].get("displayName")
             return HealthStatus(ok=True, detail=f"tenant {name}")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def _graph_all(self, g: BaseHTTP, path: str, max_pages: int = 20) -> list[dict]:
@@ -85,7 +88,7 @@ class AzureConnector(SecurityConnector):
     async def findings(self, since: datetime | None = None, limit: int = 500) -> list[Finding]:
         """Defender security alerts (Graph security API v2) and Entra risky users."""
         g = self._graph()
-        since = since or datetime.now(timezone.utc) - timedelta(hours=24)
+        since = since or datetime.now(UTC) - timedelta(hours=24)
         out: list[Finding] = []
         try:
             alerts = await self._graph_all(
@@ -94,7 +97,7 @@ class AzureConnector(SecurityConnector):
                 out.append(Finding(
                     source=self.key, source_ref=a["id"], title=a.get("title", "Defender alert"),
                     severity=(a.get("severity") or "medium").lower(),
-                    detected_at=datetime.fromisoformat(a["createdDateTime"].replace("Z", "+00:00")),
+                    detected_at=datetime.fromisoformat(a["createdDateTime"]),
                     asset=(a.get("evidence") or [{}])[0].get("deviceDnsName") if a.get("evidence") else None,
                     description=a.get("description", "")[:2000], rule_id=a.get("detectorId"),
                     tags=[a.get("serviceSource", ""), *(a.get("mitreTechniques") or [])], raw=a))
@@ -103,7 +106,7 @@ class AzureConnector(SecurityConnector):
                 out.append(Finding(
                     source=self.key, source_ref=f"riskyUser:{u['id']}", title=f"Risky user: {u.get('userPrincipalName')}",
                     severity=(u.get("riskLevel") or "medium").lower(),
-                    detected_at=datetime.fromisoformat(u["riskLastUpdatedDateTime"].replace("Z", "+00:00")),
+                    detected_at=datetime.fromisoformat(u["riskLastUpdatedDateTime"]),
                     tags=["identity-protection"], raw=u))
         finally:
             await g.aclose()
@@ -170,7 +173,7 @@ class AzureConnector(SecurityConnector):
                             title=f"Azure Policy: {nc} non-compliant resources ({sub[:8]})",
                             payload=pol, result="pass" if nc == 0 else "fail",
                             candidate_control_refs=["A.8.9", "A.5.36", "CIS-4"]))
-                    except Exception as exc:  # one subscription failing must not hide the others
+                    except (httpx.HTTPError, OSError, ValueError, KeyError) as exc:  # one subscription failing must not hide the others
                         artefacts.append(EvidenceArtefact(source=self.key, source_ref=f"arm-error:{sub}",
                                                           title=f"ARM query failed for {sub[:8]}", payload={"error": str(exc)[:300]}))
             finally:

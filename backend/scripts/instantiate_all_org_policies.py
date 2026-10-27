@@ -5,15 +5,23 @@ Instantiates complete, customized policy portfolios from the 60 templates
 for all registered organizations (Operator + All Clients).
 """
 
-import sys
 import hashlib
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
+import sys
+from datetime import UTC, datetime, timedelta
 
+from app.db.models import (
+    Control,
+    Framework,
+    ISMSScope,
+    Organization,
+    Policy,
+    PolicyVersion,
+    Task,
+)
 from app.db.session import SessionLocal
-from app.db.models import Organization, ISMSScope, Policy, PolicyVersion, Control, Framework, Requirement, Task
-from app.services.templates import list_templates, render_for_policy
 from app.services.isms import recommend_frameworks
+from app.services.templates import list_templates, render_for_policy
+
 
 def run():
     db = SessionLocal()
@@ -23,12 +31,12 @@ def run():
         print(f"Total non-generic templates available: {len(templates)}")
         print(f"Total organizations to process: {len(orgs)}\n")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for org in orgs:
-            print(f"==================================================")
+            print("==================================================")
             print(f"Processing: {org.name} ({org.kind.upper()} | {org.country} | {org.sector})")
-            print(f"==================================================")
+            print("==================================================")
 
             # 1. Setup / update ISMSScope
             rec = recommend_frameworks(org)
@@ -115,7 +123,7 @@ def run():
                         req_refs = [{"framework_id": "eu-ai-act", "ref": "Art. 4"}]
                     elif 'PRIV-' in code or code == 'BDP-POL-01':
                         req_refs = [{"framework_id": "lei-22-11-ao" if org.country == "AO" else "gdpr", "ref": "Art. 35" if "DPIA" in code else "Art. 33" if "BREACH" in code else "Art. 5"}]
-                    elif code.startswith('POL-') or code.startswith('PRC-'):
+                    elif code.startswith(('POL-', 'PRC-')):
                         req_refs = [{"framework_id": "iso27001-2022", "ref": "5.2" if code == "POL-01" else "A.5.15" if code == "POL-02" else "6.1.2"}]
                     elif 'BCM' in code or 'INC' in code:
                         req_refs = [{"framework_id": "iso27001-2022", "ref": "A.5.24" if "INC" in code else "A.5.30"}]

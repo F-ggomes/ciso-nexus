@@ -11,12 +11,13 @@ from __future__ import annotations
 
 import socket
 import ssl
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
 from sqlalchemy.orm import Session
-from app.db.models import Asset, Vulnerability, Organization
+
+from app.db.models import Asset, Organization
 
 
 def scan_domain(domain: str) -> dict[str, Any]:
@@ -25,7 +26,7 @@ def scan_domain(domain: str) -> dict[str, Any]:
     if "://" in clean_domain:
         clean_domain = urlparse(clean_domain).hostname or clean_domain
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     res: dict[str, Any] = {
         "domain": clean_domain,
         "scanned_at": now.isoformat(),
@@ -41,7 +42,7 @@ def scan_domain(domain: str) -> dict[str, Any]:
     try:
         _, _, ips = socket.gethostbyname_ex(clean_domain)
         res["ip_addresses"] = ips
-    except Exception as e:
+    except OSError:
         # Fallback for internal / demo domains
         res["ip_addresses"] = ["194.65.100.22"]
         res["tls"] = {
@@ -67,31 +68,45 @@ def scan_domain(domain: str) -> dict[str, Any]:
     # 2. Check TLS Certificate
     ctx = ssl.create_default_context()
     try:
-        with socket.create_connection((clean_domain, 443), timeout=5) as sock:
-            with ctx.wrap_socket(sock, server_hostname=clean_domain) as ssock:
-                cert = ssock.getpeercert()
-                if cert:
-                    not_after_str = cert.get("notAfter", "")
-                    # Format: 'May 10 23:59:59 2027 GMT'
-                    not_after = datetime.strptime(not_after_str, "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc)
+        with (
+            socket.create_connection((clean_domain, 443), timeout=5) as sock,
+            ctx.wrap_socket(sock, server_hostname=clean_domain) as ssock,
+        ):
+            cert = ssock.getpeercert()
+            if cert:
+                not_after_val = cert.get("notAfter")
+                if isinstance(not_after_val, str) and not_after_val:
+                    not_after = datetime.strptime(not_after_val, "%b %d %H:%M:%S %Y %Z").replace(tzinfo=UTC)
                     days_remaining = (not_after - now).days
-                    issuer = dict(x[0] for x in cert.get("issuer", []))
-                    org_issuer = issuer.get("organizationName") or issuer.get("commonName") or "CA Válida"
+                else:
+                    not_after = now
+                    days_remaining = 0
 
-                    grade = "A" if days_remaining > 30 else ("C" if days_remaining > 7 else "F")
-                    res["tls"] = {
-                        "valid": days_remaining > 0,
-                        "expires_at": not_after.isoformat(),
-                        "days_remaining": max(0, days_remaining),
-                        "issuer": org_issuer,
-                        "version": ssock.version(),
-                        "grade": grade,
-                    }
-                    if days_remaining <= 30:
-                        res["findings"].append(f"Certificado TLS expira em {days_remaining} dias ({org_issuer})")
-    except Exception as e:
-        res["tls"] = {"valid": False, "days_remaining": 0, "issuer": "Nenhum", "grade": "F", "error": str(e)}
-        res["findings"].append(f"Falha na ligação TLS porta 443: {e}")
+                issuer_dict: dict[str, str] = {}
+                raw_issuer = cert.get("issuer", ())
+                if isinstance(raw_issuer, tuple):
+                    for entry in raw_issuer:
+                        if isinstance(entry, tuple) and len(entry) > 0 and isinstance(entry[0], tuple):
+                            first_tuple = entry[0]
+                            if len(first_tuple) == 2 and isinstance(first_tuple[0], str) and isinstance(first_tuple[1], str):
+                                issuer_dict[first_tuple[0]] = first_tuple[1]
+
+                org_issuer = issuer_dict.get("organizationName") or issuer_dict.get("commonName") or "CA Válida"
+
+                grade = "A" if days_remaining > 30 else ("C" if days_remaining > 7 else "F")
+                res["tls"] = {
+                    "valid": days_remaining > 0,
+                    "expires_at": not_after.isoformat(),
+                    "days_remaining": max(0, days_remaining),
+                    "issuer": org_issuer,
+                    "version": ssock.version(),
+                    "grade": grade,
+                }
+                if days_remaining <= 30:
+                    res["findings"].append(f"Certificado TLS expira em {days_remaining} dias ({org_issuer})")
+    except (ssl.SSLError, OSError, ValueError) as exc:
+        res["tls"] = {"valid": False, "days_remaining": 0, "issuer": "Nenhum", "grade": "F", "error": str(exc)}
+        res["findings"].append(f"Falha na ligação TLS porta 443: {exc}")
 
     # 3. Fast Port Checks on common perimeter ports
     common_ports = [
@@ -110,7 +125,7 @@ def scan_domain(domain: str) -> dict[str, Any]:
             r = s.connect_ex((clean_domain, port))
             if r == 0:
                 is_open = True
-        except Exception:
+        except OSError:
             pass
         finally:
             s.close()

@@ -10,7 +10,22 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.v1 import ai, auth, compliance, connectors, easm, evidence, incidents, isms, policies, reports, repository, risks, tasks, vendors
+from app.api.v1 import (
+    ai,
+    auth,
+    compliance,
+    connectors,
+    easm,
+    evidence,
+    incidents,
+    isms,
+    policies,
+    reports,
+    repository,
+    risks,
+    tasks,
+    vendors,
+)
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import SessionLocal, init_db

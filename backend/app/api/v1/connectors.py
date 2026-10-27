@@ -7,7 +7,7 @@ from app.api.schemas import ConfigProposeIn, ConnectorConfigIn
 from app.connectors.registry import registry
 from app.core.crypto import decrypt_secrets, encrypt_secrets
 from app.core.security import require_roles
-from app.db.models import ConnectorConfig, Organization
+from app.db.models import ConnectorConfig
 from app.db.session import SessionLocal
 from app.services.sync import sync_all, sync_connector
 

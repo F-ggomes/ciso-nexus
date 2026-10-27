@@ -18,6 +18,7 @@ import type {
   IsmsScope,
   Me,
   Notification,
+  Organization,
   Policy,
   PolicyCreate,
   PolicyDetail,

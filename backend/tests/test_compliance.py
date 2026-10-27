@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+
 import pytest
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test_nexus.db")
@@ -12,7 +13,7 @@ from fastapi.testclient import TestClient
 
 from app.core.security import hash_password
 from app.db.models import Organization, Policy, PolicyVersion, User
-from app.db.session import Base, SessionLocal, engine, init_db
+from app.db.session import SessionLocal, init_db
 from app.main import app
 from app.services.compliance_engine import compute_compliance_coverage, generate_remediation_clause
 

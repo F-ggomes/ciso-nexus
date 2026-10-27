@@ -12,12 +12,12 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///./test_nexus.db")
 os.environ.setdefault("SCHEDULER_ENABLED", "false")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-ci-only")
 
-from fastapi.testclient import TestClient  # noqa: E402
+from fastapi.testclient import TestClient
 
-from app.core.security import hash_password  # noqa: E402
-from app.db.models import Organization, User  # noqa: E402
-from app.db.session import Base, SessionLocal, engine, init_db  # noqa: E402
-from app.main import app  # noqa: E402
+from app.core.security import hash_password
+from app.db.models import Organization, User
+from app.db.session import Base, SessionLocal, engine, init_db
+from app.main import app
 
 
 @pytest.fixture(scope="module")

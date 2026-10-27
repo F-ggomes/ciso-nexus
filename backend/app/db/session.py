@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
@@ -14,9 +15,9 @@ class Base(DeclarativeBase):
 
 def _engine():
     url = get_settings().database_url
-    kwargs = {"pool_pre_ping": True}
+    kwargs: dict[str, Any] = {"pool_pre_ping": True}
     if url.startswith("sqlite"):
-        kwargs = {"connect_args": {"check_same_thread": False}}
+        kwargs["connect_args"] = {"check_same_thread": False}
     return create_engine(url, **kwargs)
 
 

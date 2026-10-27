@@ -1,6 +1,7 @@
 """CISO Copilot, skill agents and the AI audit log."""
 from __future__ import annotations
 
+from datetime import UTC
 from typing import Any
 
 from fastapi import APIRouter, Depends
@@ -48,9 +49,9 @@ def _tools(db, org, who) -> dict[str, tuple[ToolSpec, Any]]:
         return coverage_by_framework(db, org.id)
 
     async def overdue_tasks(_):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         return [{"id": t.id, "title": t.title, "due_at": t.due_at, "assignee": t.assignee, "priority": t.priority}
                 for t in db.query(Task).filter(Task.org_id == org.id, Task.status != "done", Task.due_at < now).all()]
 
@@ -68,7 +69,7 @@ def _tools(db, org, who) -> dict[str, tuple[ToolSpec, Any]]:
 
         return retrieve(db, str(args.get("query", "")), limit=15)
 
-    spec = lambda n, d, props=None, req=None: ToolSpec(n, d, {"type": "object", "properties": props or {}, "required": req or []})  # noqa: E731
+    spec = lambda n, d, props=None, req=None: ToolSpec(n, d, {"type": "object", "properties": props or {}, "required": req or []})
     return {
         "get_kpis": (spec("get_kpis", "Current KPIs for the organization: risks, incidents, vendors, evidence, controls, vulnerabilities, tasks, frameworks"), get_kpis),
         "top_risks": (spec("top_risks", "Highest-scored risks", {"limit": {"type": "integer"}}), top_risks),

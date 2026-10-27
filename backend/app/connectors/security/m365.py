@@ -7,6 +7,8 @@ Purview DLP alerts are read from the Graph security alerts feed with serviceSour
 """
 from __future__ import annotations
 
+from typing import ClassVar
+
 from app.connectors.base import EvidenceArtefact, HealthStatus, SecurityConnector
 from app.connectors.registry import register
 from app.connectors.security.azure import AzureConnector
@@ -16,8 +18,8 @@ from app.connectors.security.azure import AzureConnector
 class Microsoft365Connector(SecurityConnector):
     key = "m365"
     display_name = "Microsoft 365 / Intune / Purview"
-    capabilities = {"evidence", "assets"}
-    config_schema = AzureConnector.config_schema
+    capabilities: ClassVar[set[str]] = {"evidence", "assets"}
+    config_schema: ClassVar[dict[str, str]] = AzureConnector.config_schema
 
     def __init__(self, cfg=None):
         super().__init__(cfg)

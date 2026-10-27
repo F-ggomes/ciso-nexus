@@ -6,7 +6,8 @@ which is only exposed when the caller holds the ciso or analyst role.
 from __future__ import annotations
 
 import json
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -44,7 +45,7 @@ class CISOCopilot:
                 else:
                     try:
                         result = await spec_fn[1](call.get("input") or {})
-                    except Exception as exc:  # surfaced to the model, logged upstream
+                    except Exception as exc:  # noqa: BLE001 - surfaced to the model, logged upstream
                         result = {"error": str(exc)}
                 trace.append({"tool": call["name"], "input": call.get("input"), "result_preview": str(result)[:400]})
                 messages.append(

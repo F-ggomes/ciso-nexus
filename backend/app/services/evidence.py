@@ -10,7 +10,7 @@ import hashlib
 import io
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -53,7 +53,7 @@ def extract_text(data: bytes, ext: str) -> str:
             return "\n".join(lines)
         if ext in ("csv", "txt", "log", "json"):
             return data.decode("utf-8", errors="replace")[:2_000_000]
-    except Exception as exc:  # extraction is best effort
+    except Exception as exc:  # noqa: BLE001 - extraction is best effort
         return f"[extraction failed: {exc}]"
     return ""
 
@@ -85,7 +85,7 @@ def store_artefacts(db: Session, org_id: str, artefacts: list[EvidenceArtefact],
     for a in artefacts:
         dup = db.query(Evidence).filter_by(org_id=org_id, source=a.source, source_ref=a.source_ref, sha256=a.sha256).first()
         if dup:
-            dup.collected_at = datetime.now(timezone.utc)
+            dup.collected_at = datetime.now(UTC)
             continue
         control_id = None
         if auto_link and a.candidate_control_refs:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -130,7 +130,7 @@ def batch_approve(db: DB, org: Org, who: Who, body: BatchApproveIn):
 
     policies_to_approve = q.all()
     approved_count = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     for p in policies_to_approve:
         approve(db, p, who.sub)
         approved_count += 1
@@ -149,7 +149,7 @@ def attest(db: DB, org: Org, who: Who, policy_id: str):
         raise HTTPException(400, "Only approved policies can be attested")
     db.add(PolicyAttestation(policy_id=p.id, version=p.current_version, user_email=who.sub))
     db.commit()
-    return {"attested_at": datetime.now(timezone.utc)}
+    return {"attested_at": datetime.now(UTC)}
 
 
 @router.get("/{policy_id}/attestations")

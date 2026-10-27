@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Response
 
@@ -32,7 +32,8 @@ def ciso_service_summary(db: DB, who: Who):
     Accessible by operator CISOs with access to all orgs (org_ids == []) or multi-org analysts.
     """
     from datetime import timedelta
-    from app.db.models import Organization, User, Incident, Risk, Vulnerability, Policy, Vendor, Task
+
+    from app.db.models import Incident, Organization, Risk, User, Vendor
     user = db.query(User).filter_by(email=who.sub).first()
     allowed_ids = user.org_ids if user else []
     
@@ -41,7 +42,7 @@ def ciso_service_summary(db: DB, who: Who):
         orgs_query = orgs_query.filter(Organization.id.in_(allowed_ids))
     all_orgs = orgs_query.all()
     
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     org_summaries = []
     imminent_clocks = []
     
@@ -67,15 +68,15 @@ def ciso_service_summary(db: DB, who: Who):
                         "overdue": diff_seconds < 0,
                         "recipient": dl.get("recipient", "Banco de Portugal / CNCS")
                     })
-                except Exception:
+                except (ValueError, TypeError, KeyError):
                     pass
-                    
+
         pol_total = org_kpis["policies"]["total"]
         pol_approved = org_kpis["policies"]["approved"]
         pol_pct = round((pol_approved / max(1, pol_total)) * 100) if pol_total > 0 else 0
-        
+
         soon = now + timedelta(days=60)
-        expiring_vendors = db.query(Vendor).filter(Vendor.org_id == o.id, Vendor.contract_end != None, Vendor.contract_end <= soon).count()
+        expiring_vendors = db.query(Vendor).filter(Vendor.org_id == o.id, Vendor.contract_end.isnot(None), Vendor.contract_end <= soon).count()
         
         org_summaries.append({
             "organization": {
@@ -144,7 +145,7 @@ def kinds(who: Who):
 
 @router.get("/reports/ciso-brief")
 def ciso_brief(db: DB, org: Org):
-    return {"generated_at": datetime.now(timezone.utc), "markdown": ciso_brief_markdown(db, org.id)}
+    return {"generated_at": datetime.now(UTC), "markdown": ciso_brief_markdown(db, org.id)}
 
 
 @router.get("/reports/{kind}.{fmt}")

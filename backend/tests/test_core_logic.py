@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import pathlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -62,8 +62,8 @@ def test_jurisdictions_cover_pt_eu_ao():
 
 # ---------------------------------------------------------------- risk engine
 def _risk(**kw):
-    base = dict(likelihood=3, impact=3, inherent_score=0, residual_likelihood=None, residual_impact=None, residual_score=None,
-                level="medium", treatment="open", review_at=None)
+    base = {"likelihood": 3, "impact": 3, "inherent_score": 0, "residual_likelihood": None, "residual_impact": None, "residual_score": None,
+                "level": "medium", "treatment": "open", "review_at": None}
     base.update(kw)
     return SimpleNamespace(**base)
 
@@ -117,7 +117,7 @@ def test_parent_refs():
 def test_regulatory_deadlines_are_deterministic():
     from app.ai.agents.incident_classifier import regulatory_deadlines
 
-    t0 = datetime(2026, 10, 25, 10, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 10, 25, 10, 0, tzinfo=UTC)
     d = regulatory_deadlines(t0, dora_major=True, nis2=True, pdb=True)
     regimes = [x["regime"] for x in d]
     assert "DORA initial notification" in regimes and "GDPR Art. 33 notification to CNPD" in regimes
@@ -135,7 +135,7 @@ def test_redaction_masks_identifiers_consistently():
     text = "user joao.silva@tobe.pt from 10.1.2.3 and again joao.silva@tobe.pt NIF 234567890 IBAN PT50000201231234567890154"
     out, changed = redact(text)
     assert changed and "joao.silva" not in out and "10.1.2.3" not in out and "234567890" not in out
-    assert out.count("<EMAIL:") == 2 and len(set(x for x in out.split() if x.startswith("<EMAIL:"))) == 1
+    assert out.count("<EMAIL:") == 2 and len({x for x in out.split() if x.startswith("<EMAIL:")}) == 1
     assert "PT50" not in out and "<IBAN:" in out
     kept, _ = redact("detected 2026-10-25T10:00:00 score 12 contract ends 2027-01-31")
     assert "2026-10-25T10:00:00" in kept and "2027-01-31" in kept  # timestamps and dates survive for deadline reasoning

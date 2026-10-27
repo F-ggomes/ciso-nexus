@@ -88,8 +88,8 @@ class _OJ(HTMLParser):
 def to_markdown(xhtml: str, fid: str, lang: str, title: str, celex: str) -> tuple[str, int]:
     p = _OJ()
     p.feed(xhtml)
-    art_re = re.compile(r"^(Artigo|Article)\s+(\d+[a-z]?)", re.I)
-    annex_re = re.compile(r"^(ANEXO|ANNEX)\b\s*([IVXLC]*)", re.I)
+    art_re = re.compile(r"^(Artigo|Article)\s+(\d+[a-z]?)", re.IGNORECASE)
+    annex_re = re.compile(r"^(ANEXO|ANNEX)\b\s*([IVXLC]*)", re.IGNORECASE)
     lines: list[str] = []
     notes: list[str] = []
     started = articles = 0
@@ -122,7 +122,7 @@ def to_markdown(xhtml: str, fid: str, lang: str, title: str, celex: str) -> tupl
             else:
                 lines.append(f"**{text}**")
             continue
-        if cls.startswith("oj-ti-section") or cls.startswith("oj-ti-grseq") or cls == "oj-ti-tbl":
+        if cls.startswith(("oj-ti-section", "oj-ti-grseq")) or cls == "oj-ti-tbl":
             lines += ["", f"### {text}"]
             continue
         lines.append(f"- {text}" if cells > 1 else text)
@@ -137,8 +137,8 @@ def to_markdown(xhtml: str, fid: str, lang: str, title: str, celex: str) -> tupl
         "doc_type: legal_text",
         f"source_url: {src}",
         f"retrieved: {date.today().isoformat()}",
-        "licence: © União Europeia, https://eur-lex.europa.eu. Reutilização autorizada (Decisão 2011/833/UE). "
-        "Só faz fé o texto publicado no Jornal Oficial.",
+        ("licence: © União Europeia, https://eur-lex.europa.eu. Reutilização autorizada (Decisão 2011/833/UE). "
+        "Só faz fé o texto publicado no Jornal Oficial."),
         "---",
         "",
     ]

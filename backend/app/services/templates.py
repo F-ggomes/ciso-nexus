@@ -9,7 +9,7 @@ as the structure to follow, so generated documents keep the house format and the
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from sqlalchemy.orm import Session
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "content" / "templates"
-_FRONT = re.compile(r"^---\n(.*?)\n---\n", re.S)
+_FRONT = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 
 
 def _parse(path: Path) -> dict:
@@ -59,7 +59,7 @@ def find_template(code: str | None, kind: str, extra_dir: str | None = None) -> 
 def render(template: dict, *, org_name: str, code: str, title: str, requirement_refs: list[dict], requirement_titles: dict[str, str],
            scope_statement: str = "", appetite: dict | None = None, owner: str = "", author: str = "", version: int = 1,
            review_cycle_months: int = 12) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     refs_lines = "\n".join(f"- {r['framework_id']} {r['ref']} — {requirement_titles.get(r['framework_id'] + ':' + r['ref'], '')}".rstrip(" —")
                            for r in requirement_refs) or "- [a confirmar]"
     matrix = "\n".join(f"| {r['framework_id']} {r['ref']} | [secção] |" for r in requirement_refs) or "| [a confirmar] | |"
@@ -77,7 +77,7 @@ def render(template: dict, *, org_name: str, code: str, title: str, requirement_
     return body
 
 
-def render_for_policy(db: "Session", org, policy, scope_statement: str = "", appetite: dict | None = None, author: str = "") -> str:
+def render_for_policy(db: Session, org, policy, scope_statement: str = "", appetite: dict | None = None, author: str = "") -> str:
     from app.db.models import Requirement
 
     titles: dict[str, str] = {}

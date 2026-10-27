@@ -5,31 +5,23 @@
 """
 from __future__ import annotations
 
-import hashlib
-import json
-import os
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
+from datetime import UTC, datetime, timedelta
 
 from app.db.models import (
     Control,
-    Evidence,
     Framework,
     GapAssessment,
-    GapItem,
     Organization,
     Policy,
     PolicyAttestation,
-    PolicyVersion,
     Requirement,
     Vendor,
-    Report,
 )
 from app.db.session import SessionLocal
 from app.services.gap_analysis import run_gap_assessment
 from app.services.reporting import generate
 
-NOW = datetime.now(timezone.utc)
+NOW = datetime.now(UTC)
 ONE_YEAR_LATER = NOW + timedelta(days=365)
 
 
@@ -109,10 +101,6 @@ def run_pillar_2_audit_and_soa(db):
     print("========================================================")
     orgs = db.query(Organization).all()
 
-    framework_map = {
-        "operator": ["iso27001-2022", "dora", "eu-ai-act"],
-        "client": ["iso27001-2022", "dora", "nis2", "gdpr"],
-    }
 
     for org in orgs:
         print(f"\n--- Processando Auditoria & SoA: {org.name} ({org.country} - {org.sector}) ---")
@@ -140,16 +128,16 @@ def run_pillar_2_audit_and_soa(db):
                             title=f"Auditoria de Conformidade {fw.name} ({org.name})",
                         )
                         print(f"  ✓ Gap Assessment {fwid}: Cobertura {ga.coverage_pct:.1f}%")
-                    except Exception as e:
+                    except (ValueError, KeyError, TypeError, OSError) as e:
                         print(f"  ! Gap assessment erro para {fwid}: {e}")
 
         # Pre-generate official audit reports
         for kind, fmt in [("soa", "xlsx"), ("soa", "csv"), ("soa", "md"), ("roi", "xlsx"), ("roi", "csv"), ("risk_register", "xlsx")]:
             try:
-                data, media, rep = generate(db, org.id, kind, fmt, "ciso@example.com")
+                _data, _media, rep = generate(db, org.id, kind, fmt, "ciso@example.com")
                 print(f"  ✓ Relatório gerado: {kind}.{fmt} (SHA-256: {rep.sha256[:12]}...)")
-            except Exception as e:
-                pass
+            except (ValueError, KeyError, TypeError, OSError) as exc:
+                print(f"  ! Aviso ao gerar relatório {kind}.{fmt}: {exc}")
 
 
 def run_pillar_3_tprm_suppliers(db):
@@ -183,8 +171,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Frankfurt, Dublin)",
                 "personal_data": True,
                 "contract_ref": "TOBE-AWS-2024-001",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 90,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -205,8 +193,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Amsterdam, Dublin)",
                 "personal_data": True,
                 "contract_ref": "TOBE-MSFT-2024-002",
-                "contract_start": datetime(2024, 3, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 2, 28, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 3, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 2, 28, tzinfo=UTC),
                 "notice_period_days": 60,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -227,8 +215,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Frankfurt)",
                 "personal_data": True,
                 "contract_ref": "TOBE-CS-2025-SOC",
-                "contract_start": datetime(2025, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2026, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2025, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2026, 12, 31, tzinfo=UTC),
                 "notice_period_days": 60,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -251,8 +239,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "PT (Lisboa, Porto)",
                 "personal_data": True,
                 "contract_ref": "BA-SIBS-2023-CORE",
-                "contract_start": datetime(2023, 6, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2028, 5, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2023, 6, 1, tzinfo=UTC),
+                "contract_end": datetime(2028, 5, 31, tzinfo=UTC),
                 "notice_period_days": 180,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -273,8 +261,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Frankfurt)",
                 "personal_data": True,
                 "contract_ref": "BA-FINCORE-2024-01",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 120,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -295,8 +283,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Lisboa, Frankfurt)",
                 "personal_data": True,
                 "contract_ref": "BA-FEEDZAI-2024-AML",
-                "contract_start": datetime(2024, 2, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 1, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 2, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 1, 31, tzinfo=UTC),
                 "notice_period_days": 90,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -317,8 +305,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Bruxelas, Zoeterwoude)",
                 "personal_data": True,
                 "contract_ref": "BA-SWIFT-2022-MB",
-                "contract_start": datetime(2022, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2022, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 180,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -341,8 +329,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (França, Portugal)",
                 "personal_data": True,
                 "contract_ref": "HB-PACS-2023-01",
-                "contract_start": datetime(2023, 5, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2026, 4, 30, tzinfo=timezone.utc),
+                "contract_start": datetime(2023, 5, 1, tzinfo=UTC),
+                "contract_end": datetime(2026, 4, 30, tzinfo=UTC),
                 "notice_period_days": 90,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -363,8 +351,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "PT (Lisboa, Porto)",
                 "personal_data": True,
                 "contract_ref": "HB-HIS-2022-CORE",
-                "contract_start": datetime(2022, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2022, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 180,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -385,8 +373,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "PT",
                 "personal_data": False,
                 "contract_ref": "HB-TELCO-2024-FIBRA",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 90,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -409,8 +397,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "AO (Luanda)",
                 "personal_data": True,
                 "contract_ref": "LF-EMIS-2022-MCX",
-                "contract_start": datetime(2022, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2022, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 180,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -431,8 +419,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "AO (Luanda, Talatona)",
                 "personal_data": True,
                 "contract_ref": "LF-ASSECO-2023-CB",
-                "contract_start": datetime(2023, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2028, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2023, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2028, 12, 31, tzinfo=UTC),
                 "notice_period_days": 180,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -453,8 +441,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "AO",
                 "personal_data": False,
                 "contract_ref": "LF-UNITEL-2024-FIBRA",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2026, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2026, 12, 31, tzinfo=UTC),
                 "notice_period_days": 90,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -477,8 +465,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Dublin, Frankfurt)",
                 "personal_data": True,
                 "contract_ref": "RS-STRIPE-2024-01",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 60,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -499,8 +487,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Lisboa, Madrid, Paris)",
                 "personal_data": False,
                 "contract_ref": "RS-CF-2023-SEC",
-                "contract_start": datetime(2023, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2026, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2023, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2026, 12, 31, tzinfo=UTC),
                 "notice_period_days": 60,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -521,8 +509,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Frankfurt)",
                 "personal_data": True,
                 "contract_ref": "RS-MDB-2024-DB",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2026, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2026, 12, 31, tzinfo=UTC),
                 "notice_period_days": 60,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -545,8 +533,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "AO (Luanda)",
                 "personal_data": True,
                 "contract_ref": "DEMO-EMIS-2024",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2027, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2027, 12, 31, tzinfo=UTC),
                 "notice_period_days": 90,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -567,8 +555,8 @@ def run_pillar_3_tprm_suppliers(db):
                 "data_location": "EU (Dublin)",
                 "personal_data": True,
                 "contract_ref": "DEMO-M365-2024",
-                "contract_start": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "contract_end": datetime(2026, 12, 31, tzinfo=timezone.utc),
+                "contract_start": datetime(2024, 1, 1, tzinfo=UTC),
+                "contract_end": datetime(2026, 12, 31, tzinfo=UTC),
                 "notice_period_days": 30,
                 "art30_provisions": DORA_ART_30_COMPLIANT,
                 "exit_strategy": True,
@@ -590,7 +578,7 @@ def run_pillar_3_tprm_suppliers(db):
             continue
         print(f"\n--- Provisionando Fornecedores & Cadeia 4th-Party para: {org.name} ---")
         for v_data in v_list:
-            if "lei" in v_data and v_data["lei"]:
+            if v_data.get("lei"):
                 v_data["lei"] = v_data["lei"][:20]
             existing = db.query(Vendor).filter_by(org_id=org.id, name=v_data["name"]).first()
             if existing:
@@ -612,7 +600,7 @@ def run_pillar_3_tprm_suppliers(db):
                 print(f"  ✓ Criado novo fornecedor: {v.name} (Tier {v.tier}, Crítico: {v.supports_critical_function})")
 
     db.commit()
-    print(f"\n✓ Concluído: Fornecedores e cadeia de subcontratação sincronizados com sucesso.")
+    print("\n✓ Concluído: Fornecedores e cadeia de subcontratação sincronizados com sucesso.")
 
 
 def main():

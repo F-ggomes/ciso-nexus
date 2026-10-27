@@ -11,13 +11,12 @@ import base64
 import gzip
 import hashlib
 import json
-import os
 import re
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from app.db.models import Framework, KnowledgeDocument, Organization
+from app.db.models import Framework, KnowledgeDocument
 from app.db.session import SessionLocal
 
 PROJECT_ROOT = Path("/Users/fgpaulos/CISO PROJECT")
@@ -50,7 +49,7 @@ def save_content_files(data: dict):
 
     # 1. Metadata
     meta = {
-        "built": data.get("built", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
+        "built": data.get("built", datetime.now(UTC).strftime("%Y-%m-%d")),
         "frameworks_count": len(data.get("frameworks", [])),
         "drive_count": len(data.get("drive", [])),
         "obligations_count": len(data.get("obl", {}).get("rows", [])),
@@ -231,19 +230,19 @@ def merge_obligations(db, obl_data: dict):
 
     col_idx = {c: i for i, c in enumerate(cols)}
 
-    for row in rows:
-        def get_val(col_name: str) -> str:
-            idx = col_idx.get(col_name)
-            if idx is not None and idx < len(row):
-                return str(row[idx] or "").strip()
-            return ""
+    def get_val(r, col_name: str) -> str:
+        idx = col_idx.get(col_name)
+        if idx is not None and idx < len(r):
+            return str(r[idx] or "").strip()
+        return ""
 
-        obl_id = get_val("obligation_id")
-        law = get_val("law")
-        article = get_val("article")
-        addressee = get_val("addressee")
-        topic = get_val("topic")
-        obligation = get_val("obligation")
+    for row in rows:
+        obl_id = get_val(row, "obligation_id")
+        law = get_val(row, "law")
+        article = get_val(row, "article")
+        addressee = get_val(row, "addressee")
+        topic = get_val(row, "topic")
+        obligation = get_val(row, "obligation")
         deadline = get_val("deadline_or_timing")
         applies_from = get_val("applies_from")
         conditions = get_val("conditions_or_exemptions")

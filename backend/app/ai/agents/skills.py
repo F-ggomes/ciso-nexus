@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from app.ai.agents.prompts import BASE_FRAME
 from app.ai.base import Message
 from app.ai.router import router
-from app.connectors.schemas import connector_schemas  # noqa: F401
+from app.connectors.schemas import connector_schemas
 from app.db.models import Framework, KnowledgeDocument, Requirement
 
 SKILLS: dict[str, str] = {
@@ -47,7 +47,7 @@ configuration schemas. Answer precisely, cite refs as [framework ref], and if th
 
 def _keywords(q: str) -> list[str]:
     words = re.findall(r"[A-Za-zÀ-ú0-9.\-]{3,}", q)
-    stop = {"the", "and", "for", "with", "what", "how", "does", "que", "para", "com", "como", "uma", "the", "this", "that"}
+    stop = {"the", "and", "for", "with", "what", "how", "does", "que", "para", "com", "como", "uma", "this", "that"}
     return [w for w in words if w.lower() not in stop][:12]
 
 

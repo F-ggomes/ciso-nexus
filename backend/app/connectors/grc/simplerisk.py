@@ -7,9 +7,11 @@ likelihood, impact, calculated_risk, mitigation_planned, owner).
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar, cast
 
-from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus
+import httpx
+
+from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus, RecordKind
 from app.connectors.registry import register
 
 
@@ -17,8 +19,8 @@ from app.connectors.registry import register
 class SimpleRiskConnector(GRCConnector):
     key = "simplerisk"
     display_name = "SimpleRisk"
-    capabilities = {"pull", "push", "frameworks"}
-    config_schema = {"url": "Base URL, e.g. https://simplerisk.example.com", "api_key": "API key (API Extra)"}
+    capabilities: ClassVar[set[str]] = {"pull", "push", "frameworks"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "Base URL, e.g. https://simplerisk.example.com", "api_key": "API key (API Extra)"}
 
     def configured(self) -> bool:
         return bool(self.opt("url", "simplerisk_url") and self.opt("api_key", "simplerisk_api_key"))
@@ -32,7 +34,7 @@ class SimpleRiskConnector(GRCConnector):
             await h.get_json("/api/v2/version")
             await h.aclose()
             return HealthStatus(ok=True, detail="ok")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def pull(self, kind: str, since: datetime | None = None) -> list[ExternalRecord]:
@@ -44,7 +46,8 @@ class SimpleRiskConnector(GRCConnector):
             data = await h.get_json(paths[kind])
             items = data.get("data", data) if isinstance(data, dict) else data
             items = items.get("risks", items) if isinstance(items, dict) else items
-            return [ExternalRecord(kind=kind, external_id=str(i.get("id")), data=i) for i in items]  # type: ignore[union-attr]
+            rk = cast(RecordKind, kind)
+            return [ExternalRecord(kind=rk, external_id=str(i.get("id")), data=i) for i in items]
         finally:
             await h.aclose()
 

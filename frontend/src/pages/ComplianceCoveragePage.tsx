@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { api } from '../api/client';
-import type { Organization } from '../api/types';
 import DataTable, { Column } from '../components/DataTable';
 import Drawer from '../components/Drawer';
 import Modal from '../components/Modal';

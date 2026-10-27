@@ -13,13 +13,11 @@ import argparse
 import asyncio
 import getpass
 import os
-import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.core.security import hash_password
-from app.db.models import GapAssessment, ISMSScope, Organization, User
+from app.db.models import ISMSScope, Organization, User
 from app.db.session import SessionLocal, init_db
-from app.services.gap_analysis import run_gap_assessment
 from app.services.isms import bootstrap, recommend_frameworks
 from app.services.repository import load_content_packs, regulatory_watch
 
@@ -56,14 +54,15 @@ def main() -> None:
             print("ok")
         elif args.cmd == "seed-demo":
             load_content_packs(db)
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             
             # 1. Operator
-            org = db.query(Organization).filter_by(kind="operator").first()
-            if not org:
-                org = Organization(name="A Nossa Empresa (Operador TIC & Software)", kind="operator", country="PT", sector="software", size_band="medium",
-                                   services_provided=["software_development", "cloud_infrastructure", "ciso_as_a_service"], nis2_category="important", regulated_entity=True)
-                db.add(org); db.commit()
+            operator_org = db.query(Organization).filter_by(kind="operator").first()
+            if not operator_org:
+                operator_org = Organization(name="A Nossa Empresa (Operador TIC & Software)", kind="operator", country="PT", sector="software", size_band="medium",
+                                            services_provided=["software_development", "cloud_infrastructure", "ciso_as_a_service"], nis2_category="important", regulated_entity=True)
+                db.add(operator_org); db.commit()
+            org = operator_org
             
             # 2. Clients
             clients_data = [
@@ -102,7 +101,7 @@ def main() -> None:
                     bootstrap(db, target_org, fws, f"SGSI aplicável às operações e sistemas de {target_org.name}", "cli")
 
             # 5. Seed Incidents with Regulatory Deadlines
-            from app.db.models import Incident, Vendor, Vulnerability, Risk
+            from app.db.models import Incident, Vendor, Vulnerability
             banco = clients["Banco Alfa (Fintech & DORA)"]
             if not db.query(Incident).filter_by(org_id=banco.id).first():
                 dora_due = (now + timedelta(hours=1, minutes=42)).isoformat()

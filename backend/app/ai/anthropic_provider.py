@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.ai.base import Completion, LLMProvider, Message, ToolSpec
+from app.ai.base import Completion, LLMProvider
 from app.core.config import get_settings
 
 

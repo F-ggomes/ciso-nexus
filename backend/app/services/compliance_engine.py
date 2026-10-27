@@ -7,11 +7,11 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.db.models import Control, Organization, Policy, Requirement
+from app.db.models import Control, Organization, Policy
 
 
 def _load_obligations() -> list[dict[str, Any]]:
-    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    content_dir = Path(__file__).resolve().parent.parent / "content"
     obl_path = content_dir / "grc_obligations.json"
     if not obl_path.is_file():
         return []
@@ -20,27 +20,27 @@ def _load_obligations() -> list[dict[str, Any]]:
     rows = data.get("rows", [])
     col_idx = {c: i for i, c in enumerate(cols)}
 
+    def _val(row: list, k: str, default: str = "") -> str:
+        i = col_idx.get(k)
+        if i is not None and i < len(row) and row[i] is not None:
+            return str(row[i]).strip()
+        return default
+
     items = []
     for r in rows:
-        def val(k: str, default: str = "") -> str:
-            i = col_idx.get(k)
-            if i is not None and i < len(r) and r[i] is not None:
-                return str(r[i]).strip()
-            return default
-
         items.append({
-            "obligation_id": val("obligation_id"),
-            "law": val("law"),
-            "article": val("article"),
-            "addressee": val("addressee"),
-            "topic": val("topic"),
-            "obligation": val("obligation"),
-            "deadline_or_timing": val("deadline_or_timing"),
-            "penalty_ref": val("penalty_ref"),
-            "mapping_iso27001": val("mapping_iso27001"),
-            "mapping_nist_csf": val("mapping_nist_csf"),
-            "evidence_examples": val("evidence_examples"),
-            "source": val("source"),
+            "obligation_id": _val(r, "obligation_id"),
+            "law": _val(r, "law"),
+            "article": _val(r, "article"),
+            "addressee": _val(r, "addressee"),
+            "topic": _val(r, "topic"),
+            "obligation": _val(r, "obligation"),
+            "deadline_or_timing": _val(r, "deadline_or_timing"),
+            "penalty_ref": _val(r, "penalty_ref"),
+            "mapping_iso27001": _val(r, "mapping_iso27001"),
+            "mapping_nist_csf": _val(r, "mapping_nist_csf"),
+            "evidence_examples": _val(r, "evidence_examples"),
+            "source": _val(r, "source"),
         })
     return items
 
@@ -143,11 +143,7 @@ def compute_compliance_coverage(db: Session, org_id: str, regulation_family: str
                     break
 
         # Check control implementation
-        has_control = False
-        # If any requirement ref or ISO matches an implemented control
-        # (In practice, controls are implemented for ISO 27001 / DORA / NIS2)
-        if match_type != "none":
-            has_control = True
+        has_control = (match_type != "none") or bool(implemented_control_req_ids)
 
         # Determine compliance status
         if matched_policy and matched_policy.status == "approved" and has_control:
@@ -210,7 +206,7 @@ def compute_compliance_coverage(db: Session, org_id: str, regulation_family: str
     # Weighted coverage: compliant = 1.0, partial = 0.5
     coverage_score = round(((compliant_count + 0.5 * partial_count) / max(total_obl, 1)) * 100, 1)
 
-    for fam, st in reg_stats.items():
+    for st in reg_stats.values():
         st["coverage_pct"] = round(((st["compliant"] + 0.5 * st["partial"]) / max(st["total"], 1)) * 100, 1)
 
     return {

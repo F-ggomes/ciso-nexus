@@ -10,14 +10,13 @@ All HTTP goes through `BaseHTTP` for consistent timeouts, retries and TLS handli
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, ClassVar, Literal
-
-import asyncio
 
 import httpx
 
@@ -55,18 +54,21 @@ class EvidenceArtefact:
     payload: dict[str, Any]
     result: str = "info"  # pass | fail | info
     candidate_control_refs: list[str] = field(default_factory=list)
-    collected_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    collected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def sha256(self) -> str:
         return hashlib.sha256(json.dumps(self.payload, sort_keys=True, default=str).encode()).hexdigest()
 
 
+RecordKind = Literal["risk", "control", "vendor", "incident", "framework"]
+
+
 @dataclass
 class ExternalRecord:
     """Generic record from a GRC system: risk, control, vendor, incident."""
 
-    kind: Literal["risk", "control", "vendor", "incident", "framework"]
+    kind: RecordKind
     external_id: str
     data: dict[str, Any]
 

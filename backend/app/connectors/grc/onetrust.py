@@ -8,9 +8,11 @@ Rate limits apply; pagination uses page/size.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar, cast
 
-from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus
+import httpx
+
+from app.connectors.base import BaseHTTP, ExternalRecord, GRCConnector, HealthStatus, RecordKind
 from app.connectors.registry import register
 
 _PATHS = {
@@ -25,8 +27,8 @@ _PATHS = {
 class OneTrustConnector(GRCConnector):
     key = "onetrust"
     display_name = "OneTrust (Vendor Risk / Assessments)"
-    capabilities = {"pull", "push", "tprm", "assessments"}
-    config_schema = {"url": "Tenant base URL, e.g. https://app-eu.onetrust.com", "api_key": "OAuth bearer token or API key"}
+    capabilities: ClassVar[set[str]] = {"pull", "push", "tprm", "assessments"}
+    config_schema: ClassVar[dict[str, str]] = {"url": "Tenant base URL, e.g. https://app-eu.onetrust.com", "api_key": "OAuth bearer token or API key"}
 
     def configured(self) -> bool:
         return bool(self.opt("url", "onetrust_url") and self.opt("api_key", "onetrust_api_key"))
@@ -40,7 +42,7 @@ class OneTrustConnector(GRCConnector):
             await h.get_json(_PATHS["vendor"], params={"size": 1})
             await h.aclose()
             return HealthStatus(ok=True, detail="ok")
-        except Exception as exc:
+        except (httpx.HTTPError, OSError, ValueError, KeyError, RuntimeError) as exc:
             return HealthStatus(ok=False, detail=str(exc)[:300])
 
     async def pull(self, kind: str, since: datetime | None = None) -> list[ExternalRecord]:
@@ -50,10 +52,11 @@ class OneTrustConnector(GRCConnector):
         out: list[ExternalRecord] = []
         try:
             page = 0
+            rk = cast(RecordKind, kind)
             while page < 50:
                 data = await h.get_json(_PATHS[kind], params={"page": page, "size": 200})
                 items = data.get("content", [])
-                out.extend(ExternalRecord(kind=kind, external_id=str(i.get("id")), data=i) for i in items)
+                out.extend(ExternalRecord(kind=rk, external_id=str(i.get("id")), data=i) for i in items)
                 if data.get("last", True) or not items:
                     break
                 page += 1
@@ -75,7 +78,7 @@ class OneTrustConnector(GRCConnector):
     async def assessments(self, vendor_id: str | None = None) -> list[dict]:
         h = self._http()
         try:
-            params = {"size": 200}
+            params: dict[str, Any] = {"size": 200}
             if vendor_id:
                 params["inventoryId"] = vendor_id
             data = await h.get_json("/api/assessment/v2/assessments", params=params)

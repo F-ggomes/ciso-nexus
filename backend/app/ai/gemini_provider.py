@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import json
-
-from app.ai.base import Completion, LLMProvider, Message, ToolSpec
+from app.ai.base import Completion, LLMProvider
 from app.core.config import get_settings
 
 
@@ -66,13 +64,15 @@ class GeminiProvider(LLMProvider):
         )
         tool_calls = []
         text = ""
-        if resp.candidates:
-            for part in resp.candidates[0].content.parts:
-                if getattr(part, "function_call", None):
-                    fc = part.function_call
+        cand = resp.candidates[0] if resp.candidates else None
+        if cand and cand.content and cand.content.parts:
+            for part in cand.content.parts:
+                fc = getattr(part, "function_call", None)
+                part_text = getattr(part, "text", None)
+                if fc and getattr(fc, "name", None):
                     tool_calls.append({"id": fc.name, "name": fc.name, "input": dict(fc.args or {})})
-                elif getattr(part, "text", None):
-                    text += part.text
+                elif part_text:
+                    text += part_text
         usage = resp.usage_metadata
         return Completion(
             text=text,

@@ -6,7 +6,7 @@ are stored and auto-linked; GRC records are mirrored with external ids.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -26,7 +26,7 @@ def _mark(db: Session, org_id: str, key: str, category: str, ok: bool, error: st
     if not row:
         row = ConnectorConfig(org_id=org_id, key=key, category=category, enabled=True)
         db.add(row)
-    row.last_sync_at = datetime.now(timezone.utc)
+    row.last_sync_at = datetime.now(UTC)
     row.last_status = "ok" if ok else "error"
     row.last_error = (error or "")[:2000] if not ok else None
     db.commit()
@@ -46,7 +46,7 @@ async def sync_connector(db: Session, org_id: str, key: str) -> dict:
             summary.update(await _sync_grc(db, org_id, conn))
         _mark(db, org_id, key, conn.category, True)
         summary["status"] = "ok"
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - isolation boundary for connector sync
         log.error("sync.failed", key=key, org=org_id, error=str(exc)[:300])
         _mark(db, org_id, key, conn.category, False, str(exc))
         summary.update({"status": "error", "error": str(exc)[:300]})
@@ -56,7 +56,7 @@ async def sync_connector(db: Session, org_id: str, key: str) -> dict:
 async def _sync_security(db: Session, org_id: str, conn: SecurityConnector) -> dict:
     out = {"findings": 0, "incidents_created": 0, "vulnerabilities": 0, "evidence": 0, "assets": 0}
     if "findings" in conn.capabilities:
-        findings = await conn.findings(since=datetime.now(timezone.utc) - timedelta(days=1))
+        findings = await conn.findings(since=datetime.now(UTC) - timedelta(days=1))
         out["findings"] = len(findings)
         for f in findings:
             if _SEV_ORDER.get(f.severity, 0) < 2:
@@ -80,7 +80,7 @@ async def _sync_security(db: Session, org_id: str, conn: SecurityConnector) -> d
                                  title=str(v.get("title") or v.get("vulnerability", {}).get("description") or cve)[:512],
                                  severity=sev if sev in _SEV_ORDER else "medium", cvss=float(score) if score else None,
                                  asset_name=str(agent.get("name") or v.get("agent", {}).get("name", ""))[:255],
-                                 due_at=datetime.now(timezone.utc) + timedelta(days={"critical": 7, "high": 30, "medium": 90, "low": 180}.get(sev, 90)),
+                                 due_at=datetime.now(UTC) + timedelta(days={"critical": 7, "high": 30, "medium": 90, "low": 180}.get(sev, 90)),
                                  raw=v))
             out["vulnerabilities"] += 1
     if "evidence" in conn.capabilities:
@@ -117,13 +117,13 @@ async def _sync_grc(db: Session, org_id: str, conn: GRCConnector) -> dict:
         for rec in await conn.pull("vendor"):
             mapper = getattr(conn, "to_vendor", None)
             data = mapper(rec) if mapper else {"name": str(rec.data.get("name", rec.external_id)), "external_system": conn.key, "external_id": rec.external_id}
-            row = db.query(Vendor).filter_by(org_id=org_id, external_system=conn.key, external_id=rec.external_id).first()
-            if not row:
-                row = Vendor(org_id=org_id)
-                db.add(row)
+            v_row = db.query(Vendor).filter_by(org_id=org_id, external_system=conn.key, external_id=rec.external_id).first()
+            if not v_row:
+                v_row = Vendor(org_id=org_id)
+                db.add(v_row)
                 out["vendors"] += 1
             for k, v in data.items():
-                setattr(row, k, v)
+                setattr(v_row, k, v)
     db.commit()
     return out
 
