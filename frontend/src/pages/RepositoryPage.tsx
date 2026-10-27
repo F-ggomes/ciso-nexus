@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Plus, RefreshCw, Search } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api, getRole } from '../api/client';
 import type { FrameworkFull, Requirement, RepositoryDocument, RepositoryDocumentCreate, RepositoryHit } from '../api/types';
 import Drawer from '../components/Drawer';
@@ -195,7 +196,15 @@ export default function RepositoryPage() {
   const reload = useMutation({ mutationFn: api.repository.reload, onSuccess: () => qc.invalidateQueries({ queryKey: ['frameworks'] }) });
 
   const hits: RepositoryHit[] = search.data ? (Array.isArray(search.data) ? search.data : search.data.hits ?? []) : [];
-  const [selectedJurisdiction, setSelectedJurisdiction] = useState<string>('ALL');
+  const [searchParams] = useSearchParams();
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<string>(() => searchParams.get('j')?.toUpperCase() || 'ALL');
+
+  useEffect(() => {
+    const j = searchParams.get('j')?.toUpperCase();
+    if (j && j !== selectedJurisdiction) {
+      setSelectedJurisdiction(j);
+    }
+  }, [searchParams]);
 
   const countsByJurisdiction = useMemo(() => {
     const data = frameworks.data ?? [];

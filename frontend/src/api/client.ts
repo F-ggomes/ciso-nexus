@@ -103,6 +103,11 @@ export function setAuth(token: string | null, role: string | null) {
   safeSet(ROLE_KEY, role);
   window.dispatchEvent(new Event('nexus-auth'));
 }
+export function setRole(role: string) {
+  memoryRole = role;
+  safeSet(ROLE_KEY, role);
+  window.dispatchEvent(new Event('nexus-auth'));
+}
 export function clearAuth() {
   setAuth(null, null);
 }
