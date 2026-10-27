@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api, getRole } from '../api/client';
 import type { FrameworkFull, Requirement, RepositoryDocument, RepositoryDocumentCreate, RepositoryHit } from '../api/types';
 import Drawer from '../components/Drawer';
+import LibrarySection from '../components/LibrarySection';
 import Markdown from '../components/Markdown';
 import Modal from '../components/Modal';
 import { Alert, Field, PageHeader, Spinner, errorMessage, fmtDate } from '../components/common';
@@ -402,6 +403,8 @@ export default function RepositoryPage() {
           {!documents.isLoading && (documents.data ?? []).length === 0 && <p className="px-3 py-4 text-center text-xs text-slate-500">No documents yet.</p>}
         </div>
       </section>
+
+      <LibrarySection />
 
       <RequirementBrowser framework={selected} onClose={() => setSelected(null)} />
       <DocumentReader doc={reading} onClose={() => setReading(null)} />

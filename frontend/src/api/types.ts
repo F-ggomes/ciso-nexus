@@ -515,6 +515,27 @@ export interface RepositoryHit {
   [k: string]: unknown;
 }
 
+export interface LibraryFolder {
+  path: string;
+  name: string;
+  depth: number;
+  documents: number;
+}
+
+export interface LibraryItem {
+  id: string;
+  title: string;
+  path: string;
+  language: string;
+  tags: string[];
+  chars: number;
+}
+
+export interface LibraryPage {
+  total: number;
+  items: LibraryItem[];
+}
+
 export interface RepositoryDocument {
   id: string;
   title: string;
@@ -525,6 +546,7 @@ export interface RepositoryDocument {
   tags: string[];
   created_at?: string;
   text?: string;
+  file_path?: string | null;
 }
 
 export interface RepositoryDocumentCreate {

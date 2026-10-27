@@ -26,6 +26,8 @@ import type {
   PolicyTemplateDetail,
   ReportHistoryEntry,
   ReportKinds,
+  LibraryFolder,
+  LibraryPage,
   RepositoryDocument,
   RepositoryDocumentCreate,
   RepositoryHit,
@@ -339,6 +341,14 @@ export const api = {
     documents: () => request<RepositoryDocument[]>('/repository/documents'),
     document: (id: string) => request<RepositoryDocument>(`/repository/documents/${id}`),
     createDocument: (body: RepositoryDocumentCreate) => request<RepositoryDocument>('/repository/documents', { method: 'POST', body }),
+    libraryTree: () => request<LibraryFolder[]>('/repository/library/tree'),
+    libraryDocuments: (params: { folder?: string; q?: string; offset?: number; limit?: number }) =>
+      request<LibraryPage>('/repository/library/documents', { query: params }),
+    libraryImport: () => request<unknown>('/repository/library/import', { method: 'POST' }),
+    libraryFile: async (id: string): Promise<Blob> => {
+      const res = await request<Response>(`/repository/library/file/${encodeURIComponent(id)}`, { raw: true });
+      return res.blob();
+    },
   },
   skills: {
     list: () => request<SkillInfo[]>('/skills'),

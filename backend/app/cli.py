@@ -5,6 +5,7 @@
   create-user EMAIL NAME ROLE   (password prompted or NEXUS_BOOTSTRAP_PASSWORD)
   seed-demo                     operator org (Tobe/Selenium style), demo CISO, ISMS bootstrap
   watch                         run regulatory watch now
+  library-import                import the document library mounted at NEXUS_LIBRARY_DIR
 """
 from __future__ import annotations
 
@@ -35,6 +36,7 @@ def main() -> None:
     u.add_argument("email"); u.add_argument("name"); u.add_argument("role", choices=["ciso", "analyst", "auditor", "owner"])
     sub.add_parser("seed-demo")
     sub.add_parser("watch")
+    sub.add_parser("library-import")
     args = p.parse_args()
 
     init_db()
@@ -149,6 +151,10 @@ def main() -> None:
             print("seed-demo complete: operator + 4 clients + users + incidents + vendors + vulns.")
         elif args.cmd == "watch":
             print(asyncio.run(regulatory_watch(db)))
+        elif args.cmd == "library-import":
+            from app.services.library import import_library
+
+            print(import_library(db))
     finally:
         db.close()
 

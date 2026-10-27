@@ -36,3 +36,9 @@ def init_db() -> None:
     from app.db import models  # noqa: F401  (register models)
 
     Base.metadata.create_all(bind=engine)
+    if engine.dialect.name == "postgresql":
+        # Trigram index keeps ILIKE search fast once the document library holds thousands of texts.
+        with engine.begin() as conn:
+            conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+            conn.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_knowledge_documents_text_trgm "
+                                 "ON knowledge_documents USING gin (text gin_trgm_ops)")
