@@ -235,6 +235,14 @@ export default function RepositoryPage() {
         subtitle="Regulatory and standards knowledge base: frameworks, requirements with crosswalks, and supporting documents."
         actions={
           <>
+            <a
+              href="/grc-library"
+              className="btn-secondary inline-flex items-center gap-1.5"
+              title="Explorar Biblioteca GRC e Visualizador Universal (322 normas, 1.484 obrigações, 5.452 ficheiros Drive)"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              Biblioteca GRC &amp; Visualizador
+            </a>
             <button className="btn-secondary" onClick={() => watch.mutate()} disabled={watch.isPending}>
               <RefreshCw className={`h-3.5 w-3.5 ${watch.isPending ? 'animate-spin' : ''}`} />
               Check for updates

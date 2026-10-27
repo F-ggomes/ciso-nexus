@@ -364,9 +364,30 @@ export const api = {
         skills_count: number;
       }>('/repository/grc/meta'),
     grcObligations: (params: { q?: string; law?: string; topic?: string; offset?: number; limit?: number } = {}) =>
-      request<{ cols: string[]; rows: (string | number | null)[][]; total: number }>('/repository/grc/obligations', { query: params }),
+      request<{ cols: string[]; rows: (string | number | null)[][]; total: number; laws: string[] }>('/repository/grc/obligations', { query: params }),
     grcDrive: (params: { q?: string; category?: string; offset?: number; limit?: number } = {}) =>
-      request<{ items: (string | number | null)[][]; total: number }>('/repository/grc/drive', { query: params }),
+      request<{ items: (string | number | null)[][]; total: number; categories: string[] }>('/repository/grc/drive', { query: params }),
+    grcFrameworks: (params: { q?: string; domain?: string; jurisdiction?: string; offset?: number; limit?: number } = {}) =>
+      request<{
+        items: {
+          id: string;
+          domain: string;
+          name: string;
+          version: string;
+          type: string;
+          issuer: string;
+          access: string;
+          jurisdiction: string;
+          url: string;
+          notes: string;
+          files: string[];
+        }[];
+        total: number;
+        domains: string[];
+        jurisdictions: string[];
+      }>('/repository/grc/frameworks', { query: params }),
+    grcTimelines: () =>
+      request<{ timelines: string; calendar: string; drive?: string }>('/repository/grc/timelines'),
   },
   skills: {
     list: () => request<SkillInfo[]>('/skills'),

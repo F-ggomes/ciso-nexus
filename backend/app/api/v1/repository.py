@@ -147,15 +147,18 @@ def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0
     content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
     obl_path = content_dir / "grc_obligations.json"
     if not obl_path.is_file():
-        return {"cols": [], "rows": [], "total": 0}
+        return {"cols": [], "rows": [], "total": 0, "laws": []}
     data = json.loads(obl_path.read_text(encoding="utf-8"))
     cols = data.get("cols", [])
     rows = data.get("rows", [])
     col_idx = {c: i for i, c in enumerate(cols)}
 
+    # Extract distinct laws
+    l_idx = col_idx.get("law", 1)
+    laws = sorted(list({str(r[l_idx]).strip() for r in rows if r[l_idx]}))
+
     filtered = rows
     if law:
-        l_idx = col_idx.get("law", 1)
         filtered = [r for r in filtered if law.lower() in str(r[l_idx]).lower()]
     if topic:
         t_idx = col_idx.get("topic", 4)
@@ -166,7 +169,7 @@ def grc_obligations(q: str = "", law: str = "", topic: str = "", offset: int = 0
 
     total = len(filtered)
     page_rows = filtered[offset : offset + limit]
-    return {"cols": cols, "rows": page_rows, "total": total}
+    return {"cols": cols, "rows": page_rows, "total": total, "laws": laws}
 
 
 @router.get("/repository/grc/drive")
@@ -174,8 +177,11 @@ def grc_drive(q: str = "", category: str = "", offset: int = 0, limit: int = Que
     content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
     drive_path = content_dir / "grc_drive.json"
     if not drive_path.is_file():
-        return {"items": [], "total": 0}
+        return {"items": [], "total": 0, "categories": []}
     items = json.loads(drive_path.read_text(encoding="utf-8"))
+
+    # Extract distinct categories (index 2)
+    categories = sorted(list({str(it[2]).strip() for it in items if len(it) > 2 and it[2]}))
 
     filtered = items
     if category:
@@ -187,4 +193,39 @@ def grc_drive(q: str = "", category: str = "", offset: int = 0, limit: int = Que
 
     total = len(filtered)
     page_items = filtered[offset : offset + limit]
-    return {"items": page_items, "total": total}
+    return {"items": page_items, "total": total, "categories": categories}
+
+
+@router.get("/repository/grc/frameworks")
+def grc_frameworks(q: str = "", domain: str = "", jurisdiction: str = "", offset: int = 0, limit: int = Query(50, le=350)):
+    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    fw_path = content_dir / "grc_frameworks.json"
+    if not fw_path.is_file():
+        return {"items": [], "total": 0, "domains": [], "jurisdictions": []}
+    fws = json.loads(fw_path.read_text(encoding="utf-8"))
+
+    domains = sorted(list({f.get("domain", "") for f in fws if f.get("domain")}))
+    jurisdictions = sorted(list({f.get("jurisdiction", "") for f in fws if f.get("jurisdiction")}))
+
+    filtered = fws
+    if domain:
+        filtered = [f for f in filtered if f.get("domain") == domain]
+    if jurisdiction:
+        filtered = [f for f in filtered if f.get("jurisdiction") == jurisdiction]
+    if q:
+        q_lower = q.lower()
+        filtered = [f for f in filtered if q_lower in f.get("id", "").lower() or q_lower in f.get("name", "").lower() or q_lower in f.get("notes", "").lower()]
+
+    total = len(filtered)
+    page_items = filtered[offset : offset + limit]
+    return {"items": page_items, "total": total, "domains": domains, "jurisdictions": jurisdictions}
+
+
+@router.get("/repository/grc/timelines")
+def grc_timelines():
+    content_dir = Path("/Users/fgpaulos/CISO PROJECT/ciso-nexus/backend/app/content")
+    docs_path = content_dir / "grc_docs.json"
+    if docs_path.is_file():
+        return json.loads(docs_path.read_text(encoding="utf-8"))
+    return {"timelines": "<p>Incident reporting timelines</p>", "calendar": "<p>Applicability calendar</p>"}
+
