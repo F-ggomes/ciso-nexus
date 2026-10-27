@@ -204,6 +204,7 @@ export default function ComplianceCoveragePage() {
         <div className="flex items-center justify-end gap-1.5">
           {r.status === 'gap' ? (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setRemediationTarget(r);
@@ -215,6 +216,7 @@ export default function ComplianceCoveragePage() {
             </button>
           ) : (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedObligation(r);
@@ -238,6 +240,7 @@ export default function ComplianceCoveragePage() {
           <div className="flex flex-wrap items-center gap-2">
             {/* Organization Selector */}
             <select
+              aria-label="Selecionar Organização"
               value={activeOrgId}
               onChange={(e) => setSelectedOrgId(e.target.value)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm dark:border-navy-800 dark:bg-navy-900 dark:text-white"
@@ -250,6 +253,7 @@ export default function ComplianceCoveragePage() {
             </select>
 
             <button
+              type="button"
               className="btn-secondary text-xs"
               onClick={() => coverageQuery.refetch()}
               title="Recarregar matriz de cobertura"
@@ -367,6 +371,7 @@ export default function ComplianceCoveragePage() {
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Cobertura por Diploma Legal &amp; Regulamento:</span>
           {selectedRegulation !== 'all' && (
             <button
+              type="button"
               onClick={() => setSelectedRegulation('all')}
               className="text-2xs font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400"
             >
@@ -380,7 +385,14 @@ export default function ComplianceCoveragePage() {
             return (
               <div
                 key={reg}
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelectedRegulation(isSelected ? 'all' : reg)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    setSelectedRegulation(isSelected ? 'all' : reg);
+                  }
+                }}
                 className={`cursor-pointer rounded-xl border p-2.5 transition ${
                   isSelected
                     ? 'border-teal-500 bg-teal-500/5 shadow-sm dark:bg-navy-800'
@@ -419,6 +431,7 @@ export default function ComplianceCoveragePage() {
           ].map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setStatusFilter(tab.id as any)}
               className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                 statusFilter === tab.id
@@ -436,6 +449,7 @@ export default function ComplianceCoveragePage() {
           <input
             type="text"
             placeholder="Pesquisar por artigo, lei, requisito, política..."
+            aria-label="Pesquisar por artigo, lei, requisito ou política"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs dark:border-navy-700 dark:bg-navy-800 dark:text-white"
@@ -577,9 +591,9 @@ export default function ComplianceCoveragePage() {
           </div>
 
           <div>
-            <label className="block text-2xs font-bold uppercase text-slate-500 mb-1">
+            <div className="text-2xs font-bold uppercase text-slate-500 mb-1">
               Política de Destino Recomendada:
-            </label>
+            </div>
             <div className="rounded-lg border border-slate-200 p-2 bg-white dark:border-navy-700 dark:bg-navy-800 font-medium">
               📄{' '}
               {remediationQuery.data?.candidate_policy ? (
@@ -594,10 +608,11 @@ export default function ComplianceCoveragePage() {
           </div>
 
           <div>
-            <label className="block text-2xs font-bold uppercase text-slate-500 mb-1">
+            <label htmlFor="compliance-suggested-clause" className="block text-2xs font-bold uppercase text-slate-500 mb-1">
               Redação da Cláusula de Conformidade Proposta:
             </label>
             <textarea
+              id="compliance-suggested-clause"
               rows={8}
               value={customClause || remediationQuery.data?.suggested_clause || ''}
               onChange={(e) => setCustomClause(e.target.value)}
@@ -612,10 +627,11 @@ export default function ComplianceCoveragePage() {
           )}
 
           <div className="flex items-center justify-end gap-2 pt-2">
-            <button className="btn-secondary text-xs" onClick={() => setRemediationTarget(null)}>
+            <button type="button" className="btn-secondary text-xs" onClick={() => setRemediationTarget(null)}>
               Cancelar
             </button>
             <button
+              type="button"
               className="btn-primary text-xs"
               disabled={applyRemediation.isPending || !remediationQuery.data?.candidate_policy}
               onClick={() => {

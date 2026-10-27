@@ -45,6 +45,14 @@ interface NavCounts {
 
 type BadgeVariant = 'rose' | 'amber' | 'teal' | 'neutral' | 'accent';
 
+const BADGE_VARIANT_CLASSES: Record<BadgeVariant, string> = {
+  rose: 'bg-rose-500/25 text-rose-300 border border-rose-500/40 animate-pulse',
+  amber: 'bg-amber-500/25 text-amber-300 border border-amber-500/40',
+  teal: 'bg-teal-500/25 text-teal-300 border border-teal-500/40',
+  accent: 'bg-indigo-500/25 text-indigo-300 border border-indigo-500/40',
+  neutral: 'bg-slate-800 text-slate-400 border border-slate-700',
+};
+
 export interface SubItem {
   to: string;
   label: string;
@@ -95,10 +103,10 @@ const groups: { key: I18nKey; items: NavItem[] }[] = [
         allowedRoles: ['ciso', 'admin', 'auditor', 'lead'],
         badge: () => ({ text: 'Viewer', variant: 'teal' }),
         subItems: [
-          { to: '/grc-library', label: '🧭 Visualizador GRC Integrado', badge: '302' },
-          { to: '/grc-library', label: '⚖️ 1.484 Obrigações Regulamentares', badge: '1.4k' },
-          { to: '/grc-library', label: '🔗 28.757 Crosswalks ISO / NIST / DORA', badge: '28k' },
-          { to: '/grc-library', label: '📁 5.452 Documentos Google Drive', badge: '5.4k' },
+          { to: '/grc-library?tab=viewer', label: '🧭 Visualizador GRC Integrado', badge: '302' },
+          { to: '/grc-library?tab=obligations', label: '⚖️ 1.484 Obrigações Regulamentares', badge: '1.4k' },
+          { to: '/grc-library?tab=frameworks', label: '🔗 28.757 Crosswalks ISO / NIST / DORA', badge: '28k' },
+          { to: '/grc-library?tab=drive', label: '📁 5.452 Documentos Google Drive', badge: '5.4k' },
           { to: '/viewer.html', label: '↗️ Abrir Viewer em Nova Janela' },
         ],
       },
@@ -232,6 +240,34 @@ const groups: { key: I18nKey; items: NavItem[] }[] = [
   },
 ];
 
+function getOrgLabel(o: { name: string; kind: string; country: string }) {
+  if (o.kind === 'operator') return `🏢 [A Nossa Empresa] — ${o.name} (Operador)`;
+  if (o.name.toLowerCase().includes('banco') || o.name.toLowerCase().includes('fintech'))
+    return `🏦 [Cliente ${o.name}] — Fintech & DORA (${o.country})`;
+  if (o.name.toLowerCase().includes('health') || o.name.toLowerCase().includes('saúde'))
+    return `🏥 [Cliente ${o.name}] — Infraestrutura NIS2 (${o.country})`;
+  if (o.country === 'AO' || o.name.toLowerCase().includes('luanda') || o.name.toLowerCase().includes('angola'))
+    return `🇦🇴 [Cliente ${o.name}] — Entidade BNA (${o.country})`;
+  return `🛒 [Cliente ${o.name}] — Software & CRA (${o.country})`;
+}
+
+function renderOrgBadge(org: string | null, selected: { kind: string; country: string } | null | undefined) {
+  if (org === 'all') {
+    return <span className="badge-teal hidden md:inline font-mono font-bold">Consolidado CISOaaS</span>;
+  }
+  if (selected?.kind === 'operator') {
+    return <span className="badge-pass hidden md:inline font-mono font-bold">Operador Principal</span>;
+  }
+  if (selected) {
+    return (
+      <span className="badge-neutral hidden md:inline font-mono font-medium">
+        Cliente {selected.country}
+      </span>
+    );
+  }
+  return null;
+}
+
 function OrgSwitcher() {
   const { t } = useI18n();
   const qc = useQueryClient();
@@ -262,23 +298,14 @@ function OrgSwitcher() {
   const isCiso = me.data?.role === 'ciso' || !me.data?.org_ids || me.data.org_ids.length === 0;
   const selected = org === 'all' ? null : orgs.find((o) => o.id === org);
 
-  const getOrgLabel = (o: { name: string; kind: string; country: string }) => {
-    if (o.kind === 'operator') return `🏢 [A Nossa Empresa] — ${o.name} (Operador)`;
-    if (o.name.toLowerCase().includes('banco') || o.name.toLowerCase().includes('fintech'))
-      return `🏦 [Cliente ${o.name}] — Fintech & DORA (${o.country})`;
-    if (o.name.toLowerCase().includes('health') || o.name.toLowerCase().includes('saúde'))
-      return `🏥 [Cliente ${o.name}] — Infraestrutura NIS2 (${o.country})`;
-    if (o.country === 'AO' || o.name.toLowerCase().includes('luanda') || o.name.toLowerCase().includes('angola'))
-      return `🇦🇴 [Cliente ${o.name}] — Entidade BNA (${o.country})`;
-    return `🛒 [Cliente ${o.name}] — Software & CRA (${o.country})`;
-  };
-
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="hidden font-semibold text-slate-500 dark:text-slate-400 sm:inline">
+      <label htmlFor="top-org-select" className="hidden font-semibold text-slate-500 dark:text-slate-400 sm:inline">
         {t('top.organization')}:
-      </span>
+      </label>
       <select
+        id="top-org-select"
+        aria-label={t('top.organization')}
         className="input w-auto py-1 text-xs font-medium cursor-pointer"
         value={org ?? ''}
         onChange={(e) => change(e.target.value)}
@@ -292,15 +319,7 @@ function OrgSwitcher() {
           </option>
         ))}
       </select>
-      {org === 'all' ? (
-        <span className="badge-teal hidden md:inline font-mono font-bold">Consolidado CISOaaS</span>
-      ) : selected?.kind === 'operator' ? (
-        <span className="badge-pass hidden md:inline font-mono font-bold">Operador Principal</span>
-      ) : selected ? (
-        <span className="badge-neutral hidden md:inline font-mono font-medium">
-          Cliente {selected.country}
-        </span>
-      ) : null}
+      {renderOrgBadge(org, selected)}
     </div>
   );
 }
@@ -331,6 +350,10 @@ function RoleSelector({ currentRole, onChange }: { currentRole: string; onChange
   return (
     <div className="relative" ref={ref}>
       <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label="Alternar Perfil RBAC"
         onClick={() => setOpen((prev) => !prev)}
         className="flex items-center gap-1.5 rounded-md border border-slate-300 dark:border-navy-700 bg-white dark:bg-navy-900 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-200 hover:border-teal-500/50 transition-colors"
       >
@@ -347,6 +370,7 @@ function RoleSelector({ currentRole, onChange }: { currentRole: string; onChange
           <div className="space-y-0.5">
             {ROLE_OPTIONS.map((opt) => (
               <button
+                type="button"
                 key={opt.id}
                 onClick={() => {
                   onChange(opt.id);
@@ -390,7 +414,14 @@ function NotificationsBell() {
   const items = notifications.data ?? [];
   return (
     <div className="relative" ref={ref}>
-      <button className="btn-ghost relative p-1" onClick={() => setOpen((o) => !o)} aria-label={t('top.notifications')}>
+      <button
+        type="button"
+        className="btn-ghost relative p-1"
+        onClick={() => setOpen((o) => !o)}
+        aria-label={t('top.notifications')}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+      >
         <Bell className="h-4 w-4" />
         {items.length > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{items.length}</span>
@@ -400,7 +431,7 @@ function NotificationsBell() {
         <div className="card absolute right-0 z-50 mt-1 w-80 overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 dark:border-navy-800">
             <span className="text-xs font-semibold">{t('top.notifications')}</span>
-            <button className="btn-ghost py-0.5 text-2xs" onClick={() => run.mutate()} disabled={run.isPending}>
+            <button type="button" className="btn-ghost py-0.5 text-2xs" onClick={() => run.mutate()} disabled={run.isPending}>
               {run.isPending ? '…' : t('top.runNotifications')}
             </button>
           </div>
@@ -420,7 +451,7 @@ function NotificationsBell() {
                       {n.related_kind && ` · ${n.related_kind} ${n.related_id ?? ''}`}
                     </div>
                   </div>
-                  <button className="btn-ghost shrink-0 py-0.5 text-2xs" onClick={() => markRead.mutate(n.id)}>
+                  <button type="button" className="btn-ghost shrink-0 py-0.5 text-2xs" onClick={() => markRead.mutate(n.id)}>
                     {t('top.markRead')}
                   </button>
                 </div>
@@ -527,7 +558,7 @@ export default function Layout() {
       items: g.items.filter((item) => {
         if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
         if (activeRole === 'ciso' || activeRole === 'admin') return true;
-        return item.allowedRoles.includes(activeRole as any);
+        return item.allowedRoles.includes(activeRole as 'ciso' | 'admin' | 'auditor' | 'lead' | 'staff');
       }),
     }))
     .filter((g) => g.items.length > 0);
@@ -563,7 +594,9 @@ export default function Layout() {
           </div>
 
           <button
+            type="button"
             onClick={toggleCollapse}
+            aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
             title={collapsed ? t('nav.expand') : t('nav.collapse')}
             className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
           >
@@ -575,7 +608,9 @@ export default function Layout() {
         <div className="px-3 pt-2.5 pb-1">
           {collapsed ? (
             <button
+              type="button"
               onClick={() => setCommandOpen(true)}
+              aria-label="Pesquisar (⌘K)"
               title="Pesquisar (⌘K)"
               className="flex h-9 w-full items-center justify-center rounded-xl border border-slate-800/80 bg-slate-900/60 text-slate-400 hover:border-teal-500/40 hover:text-teal-300 transition-all"
             >
@@ -583,6 +618,7 @@ export default function Layout() {
             </button>
           ) : (
             <button
+              type="button"
               onClick={() => setCommandOpen(true)}
               className="flex w-full items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 hover:border-teal-500/40 hover:text-white transition-all group shadow-inner"
             >
@@ -602,7 +638,9 @@ export default function Layout() {
           <div className="mx-3 mt-1.5 flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[11px] text-amber-300">
             <span className="truncate">Modo RBAC: {ROLE_OPTIONS.find((r) => r.id === activeRole)?.label}</span>
             <button
+              type="button"
               onClick={() => handleRoleChange('ciso')}
+              aria-label="Restaurar modo CISO Executivo"
               title="Restaurar modo CISO Executivo"
               className="ml-1 p-0.5 text-amber-400 hover:text-white"
             >
@@ -613,8 +651,8 @@ export default function Layout() {
 
         {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-2.5 py-2 space-y-3">
-          {filteredGroups.map((g, gi) => (
-            <div key={gi}>
+          {filteredGroups.map((g) => (
+            <div key={g.key}>
               {!collapsed ? (
                 <div className="px-2.5 pb-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400/90 flex items-center justify-between">
                   <span>{t(g.key)}</span>
@@ -669,7 +707,7 @@ export default function Layout() {
                             <div className="space-y-1">
                               {subItems!.map((sub) => (
                                 <NavLink
-                                  key={sub.to}
+                                  key={`${sub.to}-${sub.label}`}
                                   to={sub.to}
                                   className="flex items-center justify-between rounded-lg px-2 py-1 text-[11px] text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
                                 >
@@ -710,15 +748,7 @@ export default function Layout() {
                           {b && (
                             <span
                               className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold ${
-                                b.variant === 'rose'
-                                  ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40 animate-pulse'
-                                  : b.variant === 'amber'
-                                    ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40'
-                                    : b.variant === 'teal'
-                                      ? 'bg-teal-500/25 text-teal-300 border border-teal-500/40'
-                                      : b.variant === 'accent'
-                                        ? 'bg-indigo-500/25 text-indigo-300 border border-indigo-500/40'
-                                        : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                BADGE_VARIANT_CLASSES[b.variant] ?? BADGE_VARIANT_CLASSES.neutral
                               }`}
                             >
                               {b.text}
@@ -728,7 +758,10 @@ export default function Layout() {
 
                         {hasSubmenu && (
                           <button
+                            type="button"
                             onClick={(e) => toggleSubmenu(to, e)}
+                            aria-expanded={isSubOpen}
+                            aria-label={isSubOpen ? 'Recolher submenu' : 'Expandir submenu'}
                             title={isSubOpen ? 'Recolher submenu' : 'Expandir submenu'}
                             className="p-1.5 text-slate-400 hover:text-teal-300 transition-colors"
                           >
@@ -748,7 +781,7 @@ export default function Layout() {
                             const isCurrentSub = location.pathname + location.search === sub.to;
                             return (
                               <NavLink
-                                key={sub.to}
+                                key={`${sub.to}-${sub.label}`}
                                 to={sub.to}
                                 className={`flex items-center justify-between rounded-md px-2 py-1 text-[11px] transition-colors ${
                                   isCurrentSub
@@ -793,6 +826,7 @@ export default function Layout() {
                 Apple M1 Pro · Metal GPU · Zero-Trust
               </div>
               <button
+                type="button"
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
                 onClick={logout}
               >
@@ -809,7 +843,9 @@ export default function Layout() {
                 </span>
               </div>
               <button
+                type="button"
                 title={t('nav.logout')}
+                aria-label={t('nav.logout')}
                 onClick={logout}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
               >
@@ -833,6 +869,7 @@ export default function Layout() {
           <div className="flex items-center gap-3 text-xs">
             {/* Quick Command trigger in top bar */}
             <button
+              type="button"
               onClick={() => setCommandOpen(true)}
               className="hidden lg:flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-500 hover:border-teal-500/40 hover:text-slate-800 dark:border-navy-700 dark:bg-navy-800/60 dark:text-slate-300 dark:hover:text-white transition-all text-xs"
             >
@@ -849,6 +886,7 @@ export default function Layout() {
             <div className="flex items-center overflow-hidden rounded-sm border border-slate-300 dark:border-navy-700" aria-label={t('top.language')}>
               {(['en', 'pt'] as Lang[]).map((l) => (
                 <button
+                  type="button"
                   key={l}
                   onClick={() => setLang(l)}
                   className={`px-2 py-0.5 text-2xs font-semibold uppercase ${

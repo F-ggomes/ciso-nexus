@@ -16,7 +16,7 @@ function HeatMap({ risks, matrix, appetite }: { risks: Risk[]; matrix?: number[]
   // Server matrix is expected as matrix[likelihood-1][impact-1]; fall back to client-side counts.
   const counts = useMemo(() => {
     if (matrix && matrix.length === 5 && matrix.every((r) => Array.isArray(r) && r.length === 5)) {
-      return Array.from({ length: 5 }, (_, ri) => Array.from({ length: 5 }, (_, ci) => Number(matrix[4 - ri][ci]) || 0));
+      return Array.from({ length: 5 }, (_, ri) => Array.from({ length: 5 }, (_col, ci) => Number(matrix[4 - ri][ci]) || 0));
     }
     const m: number[][] = Array.from({ length: 5 }, () => Array(5).fill(0) as number[]);
     for (const r of risks) {

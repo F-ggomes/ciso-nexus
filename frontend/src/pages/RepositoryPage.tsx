@@ -27,14 +27,24 @@ const JURISDICTION_FLAGS: Record<string, string> = {
   US: '🇺🇸',
 };
 
+const JURISDICTION_SHORT_NAME: Record<string, string> = {
+  PT: 'Portugal',
+  EU: 'União Europeia',
+  AO: 'Angola',
+  INTL: 'Internacional',
+  US: 'EUA',
+};
+
+const KIND_BADGE_CLASSES: Record<string, string> = {
+  regulation: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
+  law: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
+  standard: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
+};
+const DEFAULT_KIND_CLASS = 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300';
+
 function KindBadge({ kind }: { kind: string }) {
   const k = (kind ?? '').toLowerCase();
-  const cls =
-    k === 'regulation' || k === 'law'
-      ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
-      : k === 'standard'
-        ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300'
-        : 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300';
+  const cls = KIND_BADGE_CLASSES[k] ?? DEFAULT_KIND_CLASS;
   return <span className={`badge ${cls}`}>{k || 'other'}</span>;
 }
 
@@ -42,14 +52,14 @@ function RequirementBrowser({ framework, onClose }: { framework: FrameworkFull |
   const reqs = useQuery({ queryKey: ['frameworks', framework?.id, 'requirements'], queryFn: () => api.frameworks.requirements(framework!.id), enabled: !!framework });
   const [domain, setDomain] = useState('');
   const [q, setQ] = useState('');
-  const domains = useMemo(() => Array.from(new Set((reqs.data ?? []).map((r) => r.domain))).sort(), [reqs.data]);
+  const domains = useMemo(() => Array.from(new Set((reqs.data ?? []).map((r) => r.domain))).toSorted(), [reqs.data]);
   const rows: Requirement[] = (reqs.data ?? []).filter((r) => (!domain || r.domain === domain) && (!q || `${r.ref} ${r.title} ${r.text}`.toLowerCase().includes(q.toLowerCase())));
 
   return (
     <Drawer open={!!framework} onClose={onClose} title={framework ? `${framework.name} · requirements` : ''} subtitle={framework ? `${framework.jurisdiction} · ${framework.version} · ${framework.requirements} requirements` : undefined} width="max-w-3xl">
       <div className="mb-3 flex flex-wrap gap-2">
-        <input className="input w-auto flex-1" placeholder="Filter by text or ref…" value={q} onChange={(e) => setQ(e.target.value)} />
-        <select className="input w-auto" value={domain} onChange={(e) => setDomain(e.target.value)}>
+        <input aria-label="Filter by text or ref" className="input w-auto flex-1" placeholder="Filter by text or ref…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <select aria-label="Filter by domain" className="input w-auto" value={domain} onChange={(e) => setDomain(e.target.value)}>
           <option value="">All domains</option>
           {domains.map((d) => (
             <option key={d} value={d}>
@@ -202,7 +212,7 @@ export default function RepositoryPage() {
 
   useEffect(() => {
     const j = searchParams.get('j')?.toUpperCase();
-    if (j && j !== selectedJurisdiction) {
+    if (j) {
       setSelectedJurisdiction(j);
     }
   }, [searchParams]);
@@ -243,16 +253,16 @@ export default function RepositoryPage() {
               <ExternalLink className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
               Biblioteca GRC &amp; Visualizador
             </a>
-            <button className="btn-secondary" onClick={() => watch.mutate()} disabled={watch.isPending}>
+            <button type="button" className="btn-secondary" onClick={() => watch.mutate()} disabled={watch.isPending}>
               <RefreshCw className={`h-3.5 w-3.5 ${watch.isPending ? 'animate-spin' : ''}`} />
               Check for updates
             </button>
             {(role === 'ciso' || role === 'admin') && (
-              <button className="btn-secondary" onClick={() => reload.mutate()} disabled={reload.isPending}>
+              <button type="button" className="btn-secondary" onClick={() => reload.mutate()} disabled={reload.isPending}>
                 Reload packs
               </button>
             )}
-            <button className="btn-primary" onClick={() => setAddDoc(true)}>
+            <button type="button" className="btn-primary" onClick={() => setAddDoc(true)}>
               <Plus className="h-3.5 w-3.5" />
               Add document
             </button>
@@ -339,7 +349,7 @@ export default function RepositoryPage() {
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-navy-800 dark:text-slate-300'
                 }`}
               >
-                <span>{JURISDICTION_FLAGS[code] || '🌐'} {code === 'INTL' ? 'Internacional' : code === 'US' ? 'EUA' : code === 'PT' ? 'Portugal' : code === 'EU' ? 'União Europeia' : 'Angola'}</span>
+                <span>{JURISDICTION_FLAGS[code] || '🌐'} {JURISDICTION_SHORT_NAME[code] || code}</span>
                 <span className={`rounded-full px-1.5 py-0.5 text-2xs ${active ? 'bg-white/20' : 'bg-black/10 dark:bg-white/10'}`}>{count}</span>
               </button>
             );
@@ -354,7 +364,7 @@ export default function RepositoryPage() {
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {items.map((f) => (
-              <button key={f.id} onClick={() => setSelected(f)} className="card flex flex-col gap-1.5 p-3 text-left hover:border-accent-500">
+              <button key={f.id} type="button" onClick={() => setSelected(f)} className="card flex flex-col gap-1.5 p-3 text-left hover:border-accent-500">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-semibold text-navy-900 dark:text-slate-100">{f.name}</span>
                   <KindBadge kind={f.kind} />

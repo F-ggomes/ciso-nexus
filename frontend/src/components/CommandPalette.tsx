@@ -478,10 +478,20 @@ export default function CommandPalette({ open, onClose, onOpenBriefing }: Comman
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-navy-950/80 backdrop-blur-md transition-opacity">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-navy-950/80 backdrop-blur-md transition-opacity"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+      role="presentation"
+    >
       <div
         className="w-full max-w-2xl overflow-hidden rounded-2xl border border-teal-500/30 bg-[#0c1322] text-slate-200 shadow-[0_25px_60px_rgba(0,0,0,0.85)] ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
       >
         {/* Search header */}
         <div className="flex items-center gap-3 border-b border-slate-800/80 px-4 py-3.5 bg-navy-900/60">
@@ -493,6 +503,7 @@ export default function CommandPalette({ open, onClose, onOpenBriefing }: Comman
             type="text"
             className="flex-1 bg-transparent text-sm font-medium text-white placeholder-slate-400 focus:outline-none"
             placeholder="Pesquisar módulos, normas por país, minutas pt-PT, fornecedores ou clientes… (Ex: DORA, ISO 27001, Portugal, Matriz)"
+            aria-label="Pesquisar comandos e recursos"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -517,7 +528,15 @@ export default function CommandPalette({ open, onClose, onOpenBriefing }: Comman
                 return (
                   <div
                     key={item.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => executeItem(item)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        executeItem(item);
+                      }
+                    }}
                     onMouseEnter={() => setSelectedIndex(idx)}
                     className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-xs cursor-pointer transition-all ${
                       isSelected

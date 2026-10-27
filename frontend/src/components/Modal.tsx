@@ -23,7 +23,16 @@ export default function Modal({ open, onClose, title, children, footer, width = 
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-navy-950/50 backdrop-blur-[1px]" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-navy-950/50 backdrop-blur-[1px]"
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') onClose();
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal backdrop"
+      />
       <div
         className={`relative flex max-h-[90vh] w-full ${width} flex-col rounded-md border border-slate-200 bg-white shadow-2xl dark:border-navy-800 dark:bg-navy-900`}
         role="dialog"
@@ -31,7 +40,7 @@ export default function Modal({ open, onClose, title, children, footer, width = 
       >
         <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-navy-800">
           <h2 className="text-sm font-semibold text-navy-900 dark:text-slate-100">{title}</h2>
-          <button className="btn-ghost -mr-1 p-1" onClick={onClose} aria-label="Close">
+          <button type="button" className="btn-ghost -mr-1 p-1" onClick={onClose} aria-label="Close">
             <X className="h-4 w-4" />
           </button>
         </header>

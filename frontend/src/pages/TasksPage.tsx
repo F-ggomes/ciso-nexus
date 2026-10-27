@@ -223,6 +223,11 @@ function NewTaskModal({ open, onClose, sprints, defaultSprint }: { open: boolean
   );
 }
 
+function handleTaskDragStart(e: DragEvent<HTMLDivElement>, task: Task) {
+  e.dataTransfer.setData('text/plain', JSON.stringify({ id: task.id, from: task.status }));
+  e.dataTransfer.effectAllowed = 'move';
+}
+
 export default function TasksPage() {
   const { t } = useI18n();
   const qc = useQueryClient();
@@ -238,11 +243,6 @@ export default function TasksPage() {
       qc.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
-
-  const onDragStart = (e: DragEvent<HTMLDivElement>, task: Task) => {
-    e.dataTransfer.setData('text/plain', JSON.stringify({ id: task.id, from: task.status }));
-    e.dataTransfer.effectAllowed = 'move';
-  };
   const onDrop = (e: DragEvent<HTMLDivElement>, status: TaskStatus) => {
     e.preventDefault();
     setDragOver(null);
@@ -306,7 +306,7 @@ export default function TasksPage() {
               </div>
               <div className="flex-1 space-y-2 overflow-y-auto pr-0.5">
                 {items.map((task) => (
-                  <TaskCard key={task.id} task={task} onDragStart={onDragStart} />
+                  <TaskCard key={task.id} task={task} onDragStart={handleTaskDragStart} />
                 ))}
                 {items.length === 0 && <div className="rounded-sm border border-dashed border-slate-300 p-3 text-center text-2xs text-slate-400 dark:border-navy-700">Drop here</div>}
               </div>

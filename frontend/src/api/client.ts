@@ -193,7 +193,7 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
     throw new ApiError(401, 'Unauthorized');
   }
   if (!res.ok) {
-    let detail: unknown = undefined;
+    let detail: unknown;
     let message = `${res.status} ${res.statusText}`;
     try {
       detail = await res.json();

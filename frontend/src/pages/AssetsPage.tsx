@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Plus } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { api } from '../api/client';
 import type { Asset, AssetInput } from '../api/types';
 import DataTable, { type Column } from '../components/DataTable';
@@ -23,31 +23,42 @@ const emptyAsset: AssetInput = {
   location: '',
 };
 
+const CLASS_BADGE_CLASSES: Record<string, string> = {
+  restricted: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
+  confidential: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  internal: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
+};
+
 function ClassBadge({ value }: { value: string }) {
   const v = (value ?? '').toLowerCase();
-  const cls =
-    v === 'restricted'
-      ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
-      : v === 'confidential'
-        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
-        : v === 'internal'
-          ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300'
-          : 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300';
+  const cls = CLASS_BADGE_CLASSES[v] ?? 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300';
   return <span className={`badge ${cls}`}>{v || '—'}</span>;
 }
 
-function CiaCell({ cia }: { cia: Asset['cia'] }) {
-  const cell = (label: string, v: number) => (
+function SingleCia({ label, v }: { label: string; v: number }) {
+  const badgeCls =
+    v >= 3
+      ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
+      : v === 2
+        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+        : 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300';
+
+  return (
     <span className="inline-flex items-center gap-0.5" title={`${label}: ${v}`}>
       <span className="text-2xs text-slate-500">{label}</span>
-      <span className={`inline-flex h-4 w-4 items-center justify-center rounded-sm text-2xs font-semibold ${v >= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300' : v === 2 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-700 dark:bg-navy-800 dark:text-slate-300'}`}>{v}</span>
+      <span className={`inline-flex h-4 w-4 items-center justify-center rounded-sm text-2xs font-semibold ${badgeCls}`}>
+        {v}
+      </span>
     </span>
   );
+}
+
+function CiaCell({ cia }: { cia: Asset['cia'] }) {
   return (
     <span className="inline-flex gap-1.5">
-      {cell('C', cia?.c ?? 0)}
-      {cell('I', cia?.i ?? 0)}
-      {cell('A', cia?.a ?? 0)}
+      <SingleCia label="C" v={cia?.c ?? 0} />
+      <SingleCia label="I" v={cia?.i ?? 0} />
+      <SingleCia label="A" v={cia?.a ?? 0} />
     </span>
   );
 }
@@ -165,7 +176,7 @@ export default function AssetsPage() {
   const [typeFilter, setTypeFilter] = useState('');
 
   const rows = (assets.data ?? []).filter((a) => !typeFilter || a.asset_type === typeFilter);
-  const types = Array.from(new Set((assets.data ?? []).map((a) => a.asset_type))).sort();
+  const types = useMemo(() => Array.from(new Set((assets.data ?? []).map((a) => a.asset_type))).toSorted(), [assets.data]);
 
   const columns: Column<Asset>[] = [
     {
@@ -190,6 +201,7 @@ export default function AssetsPage() {
       header: '',
       render: (a) => (
         <button
+          type="button"
           className="btn-secondary py-0.5"
           onClick={(e) => {
             e.stopPropagation();
@@ -211,7 +223,7 @@ export default function AssetsPage() {
         subtitle="Information asset inventory with ownership, classification and CIA ratings (ISO/IEC 27001 A.5.9–A.5.13)."
         actions={
           <>
-            <select className="input w-auto" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <select aria-label="Filter by asset type" className="input w-auto" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
               <option value="">{t('common.all')} types</option>
               {types.map((x) => (
                 <option key={x} value={x}>
@@ -220,6 +232,7 @@ export default function AssetsPage() {
               ))}
             </select>
             <button
+              type="button"
               className="btn-primary"
               onClick={() => {
                 setEditing(null);

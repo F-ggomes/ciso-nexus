@@ -26,7 +26,7 @@ function DeadlineList({ deadlines }: { deadlines: NotificationDeadline[] }) {
         const t = new Date(d.due).getTime();
         const overdue = !Number.isNaN(t) && t < now;
         return (
-          <li key={i} className="flex items-start justify-between gap-2 py-1.5 text-xs">
+          <li key={`${d.regime}-${d.due}-${i}`} className="flex items-start justify-between gap-2 py-1.5 text-xs">
             <div>
               <span className="badge-neutral mr-1.5">{d.regime}</span>
               <span className="text-slate-600 dark:text-slate-300">{d.basis}</span>
@@ -142,10 +142,10 @@ function ClassifyDrawer({ incident, onClose }: { incident: Incident | null; onCl
       subtitle={incident ? `${incident.id} · detected ${fmtDate(incident.detected_at)} · source ${incident.source}` : undefined}
       footer={
         <>
-          <button className="btn-secondary" onClick={() => incident && classify.mutate(incident.id)} disabled={classify.isPending}>
+          <button type="button" className="btn-secondary" onClick={() => incident && classify.mutate(incident.id)} disabled={classify.isPending}>
             Re-run classification
           </button>
-          <button className="btn-primary" onClick={() => incident && ticket.mutate(incident.id)} disabled={ticket.isPending || !!ticketRef}>
+          <button type="button" className="btn-primary" onClick={() => incident && ticket.mutate(incident.id)} disabled={ticket.isPending || !!ticketRef}>
             <Ticket className="h-3.5 w-3.5" />
             {ticketRef ? `Ticket ${ticketRef}` : ticket.isPending ? 'Creating…' : 'Create ticket'}
           </button>
@@ -233,7 +233,7 @@ export default function IncidentsPage() {
       key: 'deadlines',
       header: 'Next deadline',
       render: (r) => {
-        const ds = deadlinesOf(r).sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+        const ds = deadlinesOf(r).toSorted((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
         if (ds.length === 0) return '—';
         const d = ds[0];
         const overdue = new Date(d.due).getTime() < Date.now();
@@ -251,6 +251,7 @@ export default function IncidentsPage() {
       header: '',
       render: (r) => (
         <button
+          type="button"
           className="btn-secondary py-0.5"
           onClick={(e) => {
             e.stopPropagation();
@@ -270,7 +271,7 @@ export default function IncidentsPage() {
         title={t('nav.incidents')}
         subtitle="Incident intake, regulatory classification (DORA Art. 19 / NIS2 Art. 23 / GDPR Art. 33) and ticketing."
         actions={
-          <button className="btn-primary" onClick={() => setCreate(true)}>
+          <button type="button" className="btn-primary" onClick={() => setCreate(true)}>
             <Plus className="h-3.5 w-3.5" />
             Report incident
           </button>

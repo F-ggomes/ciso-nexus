@@ -51,10 +51,10 @@ function MapDrawer({ evidence, onClose }: { evidence: Evidence | null; onClose: 
       subtitle={evidence ? `${evidence.source} · ${evidence.source_ref}` : undefined}
       footer={
         <>
-          <button className="btn-secondary" onClick={onClose}>
+          <button type="button" className="btn-secondary" onClick={onClose}>
             Close
           </button>
-          <button className="btn-primary" onClick={run} disabled={map.isPending}>
+          <button type="button" className="btn-primary" onClick={run} disabled={map.isPending}>
             <GitBranch className="h-3.5 w-3.5" />
             {map.isPending ? 'Mapping…' : 'Re-map'}
           </button>
@@ -77,7 +77,7 @@ function MapDrawer({ evidence, onClose }: { evidence: Evidence | null; onClose: 
               {mappings.length === 0 && <p className="text-xs text-slate-500">No confident mappings proposed.</p>}
               <ul className="space-y-2">
                 {mappings.map((m, i) => (
-                  <li key={i} className="rounded-sm border border-slate-200 p-2 text-xs dark:border-navy-800">
+                  <li key={`${m.framework}-${m.control_ref}-${i}`} className="rounded-sm border border-slate-200 p-2 text-xs dark:border-navy-800">
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-medium">
                         <span className="badge-accent mr-1.5">{m.framework}</span>
@@ -109,7 +109,7 @@ export default function EvidencePage() {
     queryFn: () => api.evidence.list({ result: result || undefined, source: source || undefined }),
   });
   const allEvidence = useQuery({ queryKey: ['evidence', '', ''], queryFn: () => api.evidence.list() });
-  const sources = useMemo(() => Array.from(new Set((allEvidence.data ?? []).map((e) => e.source))).sort(), [allEvidence.data]);
+  const sources = useMemo(() => Array.from(new Set((allEvidence.data ?? []).map((e) => e.source))).toSorted(), [allEvidence.data]);
   const [selected, setSelected] = useState<Evidence | null>(null);
 
   const columns: Column<Evidence>[] = [
@@ -134,6 +134,7 @@ export default function EvidencePage() {
       header: '',
       render: (e) => (
         <button
+          type="button"
           className="btn-secondary py-0.5"
           onClick={(ev) => {
             ev.stopPropagation();
@@ -154,13 +155,13 @@ export default function EvidencePage() {
         subtitle="Immutable evidence items collected from connectors, hashed and mapped to framework controls."
         actions={
           <>
-            <select className="input w-auto" value={result} onChange={(e) => setResult(e.target.value)}>
+            <select aria-label="Filter by result" className="input w-auto" value={result} onChange={(e) => setResult(e.target.value)}>
               <option value="">{t('common.all')} results</option>
               <option value="pass">pass</option>
               <option value="fail">fail</option>
               <option value="info">info</option>
             </select>
-            <select className="input w-auto" value={source} onChange={(e) => setSource(e.target.value)}>
+            <select aria-label="Filter by source" className="input w-auto" value={source} onChange={(e) => setSource(e.target.value)}>
               <option value="">{t('common.all')} sources</option>
               {sources.map((s) => (
                 <option key={s} value={s}>

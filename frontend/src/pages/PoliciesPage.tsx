@@ -382,11 +382,11 @@ export default function PoliciesPage() {
   const filterTag = searchParams.get('filter') ?? '';
 
   useEffect(() => {
-    const t = searchParams.get('tab') as 'documents' | 'templates';
-    if (t && t !== tab) {
-      setTab(t);
+    const targetTab = searchParams.get('tab') as 'documents' | 'templates';
+    if (targetTab && targetTab !== tab) {
+      setTab(targetTab);
     }
-  }, [searchParams]);
+  }, [searchParams, tab]);
 
   const qc = useQueryClient();
   const role = (getRole() ?? '').toLowerCase();
