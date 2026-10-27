@@ -290,6 +290,9 @@ export const api = {
     list: () => request<FrameworkFull[]>('/frameworks'),
     requirements: (id: string) => request<Requirement[]>(`/frameworks/${encodeURIComponent(id)}/requirements`),
   },
+  orgs: {
+    list: () => request<Organization[]>('/orgs'),
+  },
   auth: {
     me: () => request<Me>('/auth/me'),
   },
@@ -413,6 +416,61 @@ export const api = {
       const res = await request<Response>(`/reports/${encodeURIComponent(kind)}.${encodeURIComponent(fmt)}`, { raw: true });
       return res.blob();
     },
+  },
+  compliance: {
+    coverage: (params: { org_id?: string; regulation?: string } = {}) =>
+      request<{
+        org: { id: string; name: string; sector: string; country: string };
+        total_obligations: number;
+        compliant_count: number;
+        partial_count: number;
+        gaps_count: number;
+        critical_gaps_count: number;
+        coverage_pct: number;
+        regulations: Record<
+          string,
+          { total: number; compliant: number; partial: number; gaps: number; critical_gaps: number; coverage_pct: number }
+        >;
+        items: {
+          obligation_id: string;
+          law: string;
+          family: string;
+          article: string;
+          topic: string;
+          obligation: string;
+          status: 'compliant' | 'partial' | 'gap';
+          status_label: string;
+          severity: 'critical' | 'high' | 'medium';
+          penalty_ref: string;
+          evidence_examples: string;
+          mapping_iso27001: string;
+          mapping_nist_csf: string;
+          policy: { id: string; code: string; title: string; status: string } | null;
+          match_type: string;
+        }[];
+      }>('/compliance/coverage', { query: params }),
+    gaps: (params: { org_id?: string; regulation?: string; severity?: string } = {}) =>
+      request<{
+        org: { id: string; name: string };
+        total_gaps: number;
+        critical_gaps_count: number;
+        gaps: unknown[];
+      }>('/compliance/gaps', { query: params }),
+    remediation: (obligation_id: string, org_id?: string) =>
+      request<{
+        obligation_id: string;
+        law: string;
+        article: string;
+        topic: string;
+        suggested_title: string;
+        suggested_clause: string;
+        candidate_policy: { id: string; code: string; title: string } | null;
+      }>(`/compliance/remediate/${encodeURIComponent(obligation_id)}`, { query: { org_id } }),
+    applyRemediation: (obligation_id: string, body: { policy_id: string; clause_text: string; change_note?: string }) =>
+      request<{ status: string; policy_id: string; policy_code: string; version: number; message: string }>(
+        `/compliance/remediate/${encodeURIComponent(obligation_id)}/apply`,
+        { method: 'POST', body },
+      ),
   },
 };
 

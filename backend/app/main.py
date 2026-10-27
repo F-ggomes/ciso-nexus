@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.v1 import ai, auth, connectors, easm, evidence, incidents, isms, policies, reports, repository, risks, tasks, vendors
+from app.api.v1 import ai, auth, compliance, connectors, easm, evidence, incidents, isms, policies, reports, repository, risks, tasks, vendors
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import SessionLocal, init_db
@@ -78,7 +78,7 @@ def create_app() -> FastAPI:
         return response
 
     prefix = s.api_prefix
-    for r in (auth, connectors, repository, isms, policies, risks, vendors, incidents, evidence, tasks, reports, ai, easm):
+    for r in (auth, compliance, connectors, repository, isms, policies, risks, vendors, incidents, evidence, tasks, reports, ai, easm):
         app.include_router(r.router, prefix=prefix)
 
     @app.get("/health")

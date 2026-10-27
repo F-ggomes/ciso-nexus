@@ -103,6 +103,20 @@ const groups: { key: I18nKey; items: NavItem[] }[] = [
         ],
       },
       {
+        to: '/compliance',
+        key: 'nav.compliance_matrix',
+        icon: ShieldCheck,
+        allowedRoles: ['ciso', 'admin', 'auditor', 'lead'],
+        badge: () => ({ text: 'Gap Analysis', variant: 'teal' }),
+        subItems: [
+          { to: '/compliance', label: '📊 Cobertura Global de Conformidade' },
+          { to: '/compliance?reg=DORA', label: '🏦 Conformidade DORA (Banca & TIC)' },
+          { to: '/compliance?reg=NIS2', label: '🛡️ Conformidade NIS2 / DL 125/2025' },
+          { to: '/compliance?reg=RGPD', label: '🔒 Proteção de Dados RGPD' },
+          { to: '/compliance?reg=BNA', label: '🇦🇴 Conformidade BNA Angola' },
+        ],
+      },
+      {
         to: '/policies',
         key: 'nav.policies',
         icon: FileSignature,
