@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: nexus
@@ -74,7 +74,7 @@ services:
       - "8443:3000"
     depends_on: [ciso-assistant-backend]
   ciso-assistant-db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     profiles: ["grc"]
     environment:
       POSTGRES_USER: ciso
